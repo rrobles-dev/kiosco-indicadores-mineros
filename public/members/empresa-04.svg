@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" role="img" aria-label="Logo 4">
+  <rect width="400" height="200" rx="16" fill="#ffffff"/>
+  <polygon points="200,34 246,80 200,126 154,80" fill="#7c3aed"/>
+  <text x="200" y="168" text-anchor="middle" font-family="system-ui, sans-serif" font-size="20" font-weight="700" fill="#101828">Logo 4</text>
+</svg>
