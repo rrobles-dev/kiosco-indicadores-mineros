@@ -119,6 +119,16 @@ describe('Logos', () => {
     expect(warn.mock.calls[0].join(' ')).toContain(member.logo);
   });
 
+  it('el título accesible es "Logos" por defecto', () => {
+    render(<Logos members={MEMBERS} random={lcg(1)} onComplete={vi.fn()} />);
+    expect(screen.getByRole('list', { name: 'Logos' })).toBeInTheDocument();
+  });
+
+  it('usa el título configurado como título accesible', () => {
+    render(<Logos members={MEMBERS} random={lcg(1)} onComplete={vi.fn()} title="Patrocinadores" />);
+    expect(screen.getByRole('list', { name: 'Patrocinadores' })).toBeInTheDocument();
+  });
+
   it('sin socios, completa de inmediato', () => {
     const onComplete = vi.fn();
     render(<Logos members={[]} random={lcg(1)} onComplete={onComplete} />);

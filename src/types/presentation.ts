@@ -6,7 +6,8 @@ export type IndicatorVariant = 'large' | 'compact' | 'minimal';
 export type ModuleRef =
   | { kind: 'indicator'; id: IndicatorId; variant: IndicatorVariant }
   | { kind: 'video' }
-  | { kind: 'logos' };
+  /** `title` es el título accesible del carrusel; por defecto "Logos". */
+  | { kind: 'logos'; title?: string };
 
 interface SceneBase {
   id: string;

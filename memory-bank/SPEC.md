@@ -1,6 +1,6 @@
 # SPEC v1: Kiosco de indicadores financieros y mineros
 
-> **Estado:** borrador para validación · **Versión del documento:** 0.12 · **Fecha:** 2026-10-02
+> **Estado:** borrador para validación · **Versión del documento:** 0.13 · **Fecha:** 2026-10-02
 > **Alcance de este documento:** solo la v1. La v2 y la v3 se describen como contexto en la sección 3.
 
 ---
@@ -214,7 +214,8 @@ Muestra logos de socios, patrocinadores, clientes o marcas.
 | Orden | Se baraja con Fisher-Yates en cada aparición del módulo, para que nadie quede siempre primero ni último (D-24) |
 | Tiempo por logo | El mismo para todos: cada página dura lo mismo |
 | Fin | La escena termina al acabar la última página (tope de seguridad de 30 s) |
-| Si un logo no carga | Se oculta, sin romper la página |
+| Si un logo no carga | Se oculta, sin romper la página, y se registra con `console.warn` (id y ruta) |
+| Título accesible | Configurable con `title` en el módulo `logos` de la escena; por defecto "Logos" |
 
 ---
 

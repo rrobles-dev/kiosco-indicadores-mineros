@@ -56,7 +56,7 @@ function renderProfile(
 }
 
 const video = () => document.querySelector('video');
-const logos = () => screen.queryByRole('list', { name: 'Socios' });
+const logos = () => screen.queryByRole('list', { name: 'Logos' });
 const allEmpty = () => makeStates(Object.fromEntries(ALL.map((id) => [id, 'empty'])));
 const UNAVAILABLE = 'Indicadores no disponibles por el momento';
 

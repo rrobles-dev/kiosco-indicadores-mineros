@@ -10,6 +10,8 @@ interface LogosProps {
   onComplete: () => void;
   pageSize?: number;
   pageMs?: number;
+  /** Título accesible del carrusel. */
+  title?: string;
 }
 
 function paginate<T>(items: T[], size: number): T[][] {
@@ -18,7 +20,14 @@ function paginate<T>(items: T[], size: number): T[][] {
   return pages;
 }
 
-export function Logos({ members, random, onComplete, pageSize = 6, pageMs = 8000 }: LogosProps) {
+export function Logos({
+  members,
+  random,
+  onComplete,
+  pageSize = 6,
+  pageMs = 8000,
+  title = 'Logos',
+}: LogosProps) {
   // D-24: el orden se baraja una vez por aparición del módulo (al montarse).
   const [pages] = useState(() => paginate(shuffle(members, random), pageSize));
   const [page, setPage] = useState(0);
@@ -41,7 +50,7 @@ export function Logos({ members, random, onComplete, pageSize = 6, pageMs = 8000
   }, [page, pages.length, pageMs]);
 
   return (
-    <ul className={styles.page} aria-label="Socios">
+    <ul className={styles.page} aria-label={title}>
       {(pages[page] ?? []).map((member) =>
         failed.has(member.id) ? null : (
           <li key={member.id} className={styles.item}>

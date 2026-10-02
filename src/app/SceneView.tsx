@@ -40,7 +40,14 @@ function ModuleView({
     case 'video':
       return <Video onComplete={onComplete} />;
     case 'logos':
-      return <Logos members={MEMBERS} random={random} onComplete={onComplete} />;
+      return (
+        <Logos
+          members={MEMBERS}
+          random={random}
+          onComplete={onComplete}
+          title={moduleRef.title}
+        />
+      );
   }
 }
 
