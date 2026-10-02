@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:tz": "TZ=America/Santiago vitest run && TZ=America/Los_Angeles vitest run && TZ=Pacific/Kiritimati vitest run",
     "preview": "vite preview"
   },
   "dependencies": {

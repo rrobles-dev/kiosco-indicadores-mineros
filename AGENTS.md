@@ -29,6 +29,7 @@ Instrucciones para agentes de IA (Claude Code, Copilot u otros) que trabajen en 
 - Las pruebas de adaptadores usan las fixtures reales de `src/data/adapters/__fixtures__/`. No inventes respuestas de API.
 - Las pruebas de vigencia cubren al menos: fin de semana, fin de semana largo, cambio de mes y cambio de horario.
 - Usa timers falsos para reintentos, timeouts y rotación; ninguna prueba espera en tiempo real.
+- Antes de cada commit con lógica de fechas, corre `npm run test:tz`. El kiosco corre en Chile y las pruebas pueden correr en cualquier zona horaria: el código no debe depender de la zona de la máquina.
 
 ## Comandos
 
