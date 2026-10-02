@@ -1,0 +1,48 @@
+/* Tamaños en unidades relativas a la pantalla; el ajuste fino es posterior. */
+.root {
+  box-sizing: border-box;
+  display: grid;
+  width: 100vw;
+  height: 100vh;
+  padding: 2vh 2vw;
+  gap: 2vh 2vw;
+}
+
+.main-strip {
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
+.main-strip .secondary {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.featured-sidebar {
+  grid-template-columns: minmax(0, 1fr) clamp(16rem, 24vw, 60rem);
+}
+
+.featured-sidebar .secondary {
+  flex-direction: column;
+}
+
+.main {
+  min-width: 0;
+  min-height: 0;
+}
+
+.secondary {
+  display: flex;
+  gap: 1vh 1.5vw;
+  min-width: 0;
+  min-height: 0;
+}
+
+.unavailable {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  margin: 0;
+  font-size: clamp(1.5rem, 5vh, 6rem);
+  text-align: center;
+}

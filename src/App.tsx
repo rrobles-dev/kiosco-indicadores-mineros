@@ -1,11 +1,11 @@
-import './App.css'
+import { ProfileLayout } from './app/ProfileLayout'
 import { useIndicators, type UseIndicatorsDeps } from './app/useIndicators'
 import { INDICATOR_MODULES } from './config/modules'
 import { findicAdapter } from './data/adapters/findic'
 import { mindicadorAdapter } from './data/adapters/mindicador'
 import { createReadingCache } from './data/cache'
 import { sleep } from './lib/sleep'
-import { IndicatorModule } from './modules/indicator/IndicatorModule'
+import { getProfileFromSearch } from './presentation/profile'
 
 const deps: UseIndicatorsDeps = {
   configs: INDICATOR_MODULES,
@@ -17,16 +17,12 @@ const deps: UseIndicatorsDeps = {
   retryDelaysMs: [2000, 4000, 8000],
 }
 
+const profile = getProfileFromSearch(window.location.search)
+
 function App() {
   const states = useIndicators(deps)
 
-  return (
-    <main className="grid">
-      {INDICATOR_MODULES.map((config) => (
-        <IndicatorModule key={config.id} config={config} state={states[config.id]} variant="compact" />
-      ))}
-    </main>
-  )
+  return <ProfileLayout profile={profile} configs={INDICATOR_MODULES} states={states} />
 }
 
 export default App
