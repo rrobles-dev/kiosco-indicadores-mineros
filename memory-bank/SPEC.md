@@ -1,6 +1,6 @@
 # SPEC v1: Kiosco de indicadores financieros y mineros
 
-> **Estado:** borrador para validación · **Versión del documento:** 0.3 · **Fecha:** 2026-10-02
+> **Estado:** borrador para validación · **Versión del documento:** 0.4 · **Fecha:** 2026-10-02
 > **Alcance de este documento:** solo la v1. La v2 y la v3 se describen como contexto en la sección 3.
 
 ---
@@ -147,6 +147,8 @@ Observaciones que afectan el diseño:
 - **Los cinco endpoints tienen la misma forma** (verificado en la Fase 0).
 - **La serie de `utm` es mensual:** una observación por mes, fechada el día 1 (`2026-10-01`, `2026-09-01`…). Permite un mini gráfico de 12 meses.
 - **Los nombres no coinciden entre fuentes:** findic llama al euro "Euro (pesos por euro)" y mindicador solo "Euro". Las etiquetas en pantalla salen de la configuración (sección 5.1), nunca del campo `nombre` de la API.
+- **Las fechas de findic son días de calendario y no se convierten de zona horaria.** `2026-10-02` ya es el día en Chile; interpretarla como instante (`new Date("2026-10-02")` es medianoche UTC) la correría al 1 de octubre. El adaptador solo valida que sea una fecha real de calendario y la usa tal cual.
+- **`findicAdapter` hace una petición por indicador y omite los ids que fallan.** Solo lanza error si fallan todos los ids pedidos.
 
 ---
 
@@ -403,7 +405,7 @@ src/
 | CA-03 | mindicador responde, pero la UF trae fecha de ayer | Se valida la vigencia | No se reintenta mindicador para la UF y se consulta findic directamente |
 | CA-04 | Ambas fuentes fallan y existe caché | Termina el ciclo | El módulo queda `stale` y muestra "Actualizado el dd-mm-aaaa" |
 | CA-05 | Ambas fuentes fallan y no existe caché | Termina el ciclo | El módulo queda `empty` y no aparece en la rotación |
-| CA-06 | Es lunes y el último dólar disponible es del viernes | Se valida la vigencia | El dólar se considera vigente (2 días ≤ 4) |
+| CA-06 | Es lunes y el último dólar disponible es del viernes | Se valida la vigencia | El dólar se considera vigente (3 días ≤ 4) |
 | CA-07 | Es 1 de octubre y la UTM disponible es de septiembre | Se valida la vigencia | La UTM se considera desactualizada |
 | CA-08 | La fuente entrega `"fecha": "2026-10-02T03:00:00.000Z"` | Se normaliza la fecha | Se guarda `2026-10-02` (fecha en `America/Santiago`) |
 | CA-09 | Una petición tarda más de 8 s | Se cumple el timeout | Se cancela y cuenta como intento fallido |
