@@ -6,8 +6,10 @@ interface ChartProps {
   series: Observation[];
   /** Cantidad de observaciones finales que se grafican */
   points: number;
-  /** full: tres rótulos por eje, último punto y período; minmax: solo mínimo y máximo */
-  mode: 'full' | 'minmax';
+  /** Valor actual; con minAxisSpanPct fija el rango mínimo del eje Y */
+  currentValue: number;
+  /** Rango mínimo del eje Y, en % del valor actual (D-22) */
+  minAxisSpanPct: number;
   formatValue: (value: number) => string;
 }
 
@@ -19,22 +21,28 @@ const isMonthly = (series: Observation[]) => series.every((o) => o.date.endsWith
 
 const formatDay = (date: string) => formatDate(date).slice(0, 5);
 
-export function Chart({ series, points, mode, formatValue }: ChartProps) {
+export function Chart({ series, points, currentValue, minAxisSpanPct, formatValue }: ChartProps) {
   const visible = series.slice(-points);
   if (visible.length < 2) return null;
 
   const values = visible.map((o) => o.value);
   const min = Math.min(...values);
   const max = Math.max(...values);
-  const range = max - min;
-  // Serie plana: línea al centro en vez de dividir por cero.
-  const yPercent = (value: number) => (range === 0 ? 50 : 100 - ((value - min) / range) * 100);
+
+  // D-22: un rango mínimo evita que variaciones pequeñas parezcan movimientos fuertes.
+  const span = Math.max(max - min, (Math.abs(currentValue) * minAxisSpanPct) / 100);
+  const center = (max + min) / 2;
+  const domainMin = center - span / 2;
+  const domainMax = center + span / 2;
+
+  const yPercent = (value: number) =>
+    span === 0 ? 50 : 100 - ((value - domainMin) / span) * 100;
   const step = WIDTH / (visible.length - 1);
   const coords = values
     .map((value, i) => `${(i * step).toFixed(2)},${((yPercent(value) * HEIGHT) / 100).toFixed(2)}`)
     .join(' ');
 
-  const yLabels = mode === 'full' ? [max, (min + max) / 2, min] : [max, min];
+  const yLabels = [domainMax, center, domainMin];
   const xDates = [
     visible[0].date,
     visible[Math.floor((visible.length - 1) / 2)].date,
@@ -45,7 +53,7 @@ export function Chart({ series, points, mode, formatValue }: ChartProps) {
     : `Últimos ${visible.length} días hábiles`;
 
   return (
-    <figure className={`${styles.chart} ${mode === 'full' ? styles.full : styles.minmax}`}>
+    <figure className={styles.chart}>
       <div className={styles.yAxis} data-axis="y">
         {yLabels.map((value, i) => (
           <span key={i}>{formatValue(value)}</span>
@@ -66,24 +74,18 @@ export function Chart({ series, points, mode, formatValue }: ChartProps) {
             vectorEffect="non-scaling-stroke"
           />
         </svg>
-        {mode === 'full' && (
-          <span
-            className={styles.lastPoint}
-            data-testid="last-point"
-            style={{ top: `${yPercent(values[values.length - 1])}%` }}
-          />
-        )}
+        <span
+          className={styles.lastPoint}
+          data-testid="last-point"
+          style={{ top: `${yPercent(values[values.length - 1])}%` }}
+        />
       </div>
-      {mode === 'full' && (
-        <>
-          <div className={styles.xAxis} data-axis="x">
-            {xDates.map((date, i) => (
-              <span key={i}>{formatDay(date)}</span>
-            ))}
-          </div>
-          <figcaption className={styles.period}>{period}</figcaption>
-        </>
-      )}
+      <div className={styles.xAxis} data-axis="x">
+        {xDates.map((date, i) => (
+          <span key={i}>{formatDay(date)}</span>
+        ))}
+      </div>
+      <figcaption className={styles.period}>{period}</figcaption>
     </figure>
   );
 }

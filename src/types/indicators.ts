@@ -51,6 +51,8 @@ export interface IndicatorModuleConfig {
   decimals: number;
   /** Cantidad de observaciones de la serie que se grafican */
   chartPoints: number;
+  /** Rango mínimo del eje Y del gráfico, en % del valor actual */
+  minAxisSpanPct: number;
   freshness: FreshnessRule;
   /** Orden de la cadena de fuentes; la primera es la primaria */
   sources: SourceId[];

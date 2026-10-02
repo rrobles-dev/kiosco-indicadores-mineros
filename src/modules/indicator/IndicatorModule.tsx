@@ -120,7 +120,8 @@ export function IndicatorModule({ config, state, variant }: IndicatorModuleProps
           <Chart
             series={reading.series}
             points={config.chartPoints}
-            mode={isLarge ? 'full' : 'minmax'}
+            currentValue={reading.current.value}
+            minAxisSpanPct={config.minAxisSpanPct}
             formatValue={(n) => formatValue(n, config.unit, config.decimals)}
           />
         </div>

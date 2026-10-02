@@ -55,7 +55,8 @@ describe('variante large', () => {
     expect(screen.getByLabelText('Sube 0,12%')).toHaveTextContent('▲ 0,12% respecto del 01-10-2026');
     expect(screen.getByText('02-10-2026')).toBeInTheDocument();
     expect(screen.getByText('Fuente: mindicador.cl')).toBeInTheDocument();
-    expect(axis(container, 'y')).toEqual(['$41.100,00', '$41.050,00', '$41.000,00']);
+    // Rango mínimo: 2 % de 41.100 = 822 > 100 de los datos, centrado en 41.050.
+    expect(axis(container, 'y')).toEqual(['$41.461,00', '$41.050,00', '$40.639,00']);
     expect(axis(container, 'x')).toEqual(['30-09', '01-10', '02-10']);
     expect(screen.getByTestId('last-point')).toBeInTheDocument();
     expect(container.querySelector('polyline')).not.toBeNull();
@@ -84,17 +85,17 @@ describe('variante large', () => {
 });
 
 describe('variante compact', () => {
-  it('muestra etiqueta, valor, variación, fecha y solo mínimo y máximo, sin fuente ni ejes extra', () => {
+  it('muestra etiqueta, valor, variación, fecha y el mismo gráfico con ejes, sin fuente', () => {
     const { container } = renderModule('compact', state('fresh', ufReading));
 
     expect(screen.getByRole('heading', { name: 'UF' })).toBeInTheDocument();
     expect(screen.getByLabelText('Sube 0,12%')).toHaveTextContent(/^▲ 0,12%$/);
     expect(screen.getByText('02-10-2026')).toBeInTheDocument();
-    expect(axis(container, 'y')).toEqual(['$41.100,00', '$41.000,00']);
-    expect(axis(container, 'x')).toEqual([]);
-    expect(screen.queryByTestId('last-point')).toBeNull();
+    expect(axis(container, 'y')).toEqual(['$41.461,00', '$41.050,00', '$40.639,00']);
+    expect(axis(container, 'x')).toEqual(['30-09', '01-10', '02-10']);
+    expect(screen.getByTestId('last-point')).toBeInTheDocument();
+    expect(screen.getByText('Últimos 3 días hábiles')).toBeInTheDocument();
     expect(screen.queryByText(/Fuente/)).toBeNull();
-    expect(screen.queryByText(/Últimos/)).toBeNull();
     expect(container.querySelector('polyline')).not.toBeNull();
   });
 });
