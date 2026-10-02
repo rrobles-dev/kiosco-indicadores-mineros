@@ -15,6 +15,7 @@ interface ChartProps {
 
 const WIDTH = 100;
 const HEIGHT = 100;
+const TICK = 4;
 
 // Una serie con todas sus fechas en día 01 es mensual (UTM).
 const isMonthly = (series: Observation[]) => series.every((o) => o.date.endsWith('-01'));
@@ -33,30 +34,40 @@ export function Chart({ series, points, currentValue, minAxisSpanPct, formatValu
   const span = Math.max(max - min, (Math.abs(currentValue) * minAxisSpanPct) / 100);
   const center = (max + min) / 2;
   const domainMin = center - span / 2;
-  const domainMax = center + span / 2;
 
-  const yPercent = (value: number) =>
-    span === 0 ? 50 : 100 - ((value - domainMin) / span) * 100;
+  const yOf = (value: number) =>
+    span === 0 ? HEIGHT / 2 : HEIGHT - ((value - domainMin) / span) * HEIGHT;
   const step = WIDTH / (visible.length - 1);
-  const coords = values
-    .map((value, i) => `${(i * step).toFixed(2)},${((yPercent(value) * HEIGHT) / 100).toFixed(2)}`)
-    .join(' ');
 
-  const yLabels = [domainMax, center, domainMin];
-  const xDates = [
-    visible[0].date,
-    visible[Math.floor((visible.length - 1) / 2)].date,
-    visible[visible.length - 1].date,
+  // Las marcas del eje Y son exactamente tope, medio y base del dominio.
+  const yMarks = [
+    { y: 0, label: formatValue(center + span / 2) },
+    { y: HEIGHT / 2, label: formatValue(center) },
+    { y: HEIGHT, label: formatValue(domainMin) },
   ];
+  const xMarks = [0, Math.floor((visible.length - 1) / 2), visible.length - 1].map((i) => ({
+    x: i * step,
+    label: formatDay(visible[i].date),
+  }));
+
+  const coords = values.map((value, i) => `${(i * step).toFixed(2)},${yOf(value).toFixed(2)}`).join(' ');
+  const lastY = yOf(values[values.length - 1]);
   const period = isMonthly(visible)
     ? `Últimos ${visible.length} meses`
     : `Últimos ${visible.length} días hábiles`;
+  const widest = yMarks.reduce((a, b) => (b.label.length > a.length ? b.label : a), '');
 
   return (
     <figure className={styles.chart}>
       <div className={styles.yAxis} data-axis="y">
-        {yLabels.map((value, i) => (
-          <span key={i}>{formatValue(value)}</span>
+        {/* Reserva el ancho de la columna: las marcas van posicionadas de forma absoluta. */}
+        <div className={styles.sizer} aria-hidden="true">
+          {widest}
+        </div>
+        {yMarks.map((mark, i) => (
+          <span key={i} className={styles.yLabel} style={{ top: `${mark.y}%` }}>
+            {mark.label}
+          </span>
         ))}
       </div>
       <div className={styles.plot}>
@@ -66,23 +77,47 @@ export function Chart({ series, points, currentValue, minAxisSpanPct, formatValu
           role="img"
           aria-label={`Gráfico de los últimos ${visible.length} valores`}
         >
-          <polyline
-            points={coords}
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            vectorEffect="non-scaling-stroke"
+          {/* De atrás hacia adelante: grilla, ejes, marcas del eje X, datos y último punto. */}
+          <g data-layer="grid">
+            {yMarks.map((mark, i) => (
+              <line key={i} className={styles.grid} x1={0} x2={WIDTH} y1={mark.y} y2={mark.y} />
+            ))}
+          </g>
+          <g data-layer="axes">
+            <line className={styles.axis} data-axis-line="y" x1={0} x2={0} y1={0} y2={HEIGHT} />
+            <line className={styles.axis} data-axis-line="x" x1={0} x2={WIDTH} y1={HEIGHT} y2={HEIGHT} />
+            {xMarks.map((mark, i) => (
+              <line
+                key={i}
+                className={styles.axis}
+                data-tick="x"
+                x1={mark.x}
+                x2={mark.x}
+                y1={HEIGHT}
+                y2={HEIGHT + TICK}
+              />
+            ))}
+          </g>
+          <polyline className={styles.data} points={coords} fill="none" />
+          <line
+            className={styles.lastPoint}
+            data-testid="last-point"
+            x1={WIDTH}
+            x2={WIDTH}
+            y1={lastY}
+            y2={lastY}
           />
         </svg>
-        <span
-          className={styles.lastPoint}
-          data-testid="last-point"
-          style={{ top: `${yPercent(values[values.length - 1])}%` }}
-        />
       </div>
       <div className={styles.xAxis} data-axis="x">
-        {xDates.map((date, i) => (
-          <span key={i}>{formatDay(date)}</span>
+        {xMarks.map((mark, i) => (
+          <span
+            key={i}
+            className={styles.xLabel}
+            style={{ left: `${mark.x}%`, transform: `translateX(-${mark.x}%)` }}
+          >
+            {mark.label}
+          </span>
         ))}
       </div>
       <figcaption className={styles.period}>{period}</figcaption>

@@ -1,23 +1,37 @@
 .chart {
+  --chart-grid: #eaecf0;
+  --chart-axis: #98a2b3;
+  --chart-line: #175cd3;
+  --chart-text: #475467;
+
   display: grid;
   grid-template-columns: auto 1fr;
   grid-template-rows: 1fr auto auto;
   gap: 0 1vw;
   margin: 0;
+  padding: 1vh 0;
   min-height: 0;
-  color: #175cd3;
+  color: var(--chart-line);
 }
 
 .yAxis {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  position: relative;
   font-size: clamp(0.8rem, 1.6vh, 2rem);
-  color: #475467;
+  color: var(--chart-text);
+}
+
+.sizer {
+  visibility: hidden;
+}
+
+.yLabel {
+  position: absolute;
+  right: 0;
+  transform: translateY(-50%);
+  white-space: nowrap;
 }
 
 .plot {
-  position: relative;
   min-height: 12vh;
 }
 
@@ -27,27 +41,55 @@
   overflow: visible;
 }
 
+/* El grosor no cambia al escalar el gráfico (D-20). */
+.grid,
+.axis,
+.data,
 .lastPoint {
-  position: absolute;
-  right: 0;
-  width: 1.4vh;
-  height: 1.4vh;
-  border-radius: 50%;
-  background: currentColor;
-  transform: translate(50%, -50%);
+  vector-effect: non-scaling-stroke;
+}
+
+.grid {
+  stroke: var(--chart-grid);
+  stroke-width: 1px;
+}
+
+.axis {
+  stroke: var(--chart-axis);
+  stroke-width: 1.5px;
+}
+
+.data {
+  stroke: var(--chart-line);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+/* Línea de largo cero con extremos redondos: dibuja un punto que no se deforma al escalar. */
+.lastPoint {
+  stroke: var(--chart-line);
+  stroke-width: 1.6vh;
+  stroke-linecap: round;
 }
 
 .xAxis {
   grid-column: 2;
-  display: flex;
-  justify-content: space-between;
+  position: relative;
+  height: 1.6em;
+  margin-top: 1vh;
   font-size: clamp(0.8rem, 1.6vh, 2rem);
-  color: #475467;
+  color: var(--chart-text);
+}
+
+.xLabel {
+  position: absolute;
+  top: 0;
+  white-space: nowrap;
 }
 
 .period {
   grid-column: 1 / -1;
   font-size: clamp(0.8rem, 1.6vh, 2rem);
-  color: #475467;
+  color: var(--chart-text);
   text-align: center;
 }

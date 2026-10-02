@@ -60,6 +60,9 @@ describe('variante large', () => {
     expect(axis(container, 'x')).toEqual(['30-09', '01-10', '02-10']);
     expect(screen.getByTestId('last-point')).toBeInTheDocument();
     expect(container.querySelector('polyline')).not.toBeNull();
+    expect(container.querySelectorAll('[data-layer="grid"] line')).toHaveLength(3);
+    expect(container.querySelector('[data-axis-line="x"]')).not.toBeNull();
+    expect(container.querySelector('[data-axis-line="y"]')).not.toBeNull();
   });
 
   it('la fuente sigue a reading.source', () => {
@@ -85,6 +88,13 @@ describe('variante large', () => {
 });
 
 describe('variante compact', () => {
+  it('muestra grilla y ejes igual que large', () => {
+    const { container } = renderModule('compact', state('fresh', ufReading));
+    expect(container.querySelectorAll('[data-layer="grid"] line')).toHaveLength(3);
+    expect(container.querySelector('[data-axis-line="x"]')).not.toBeNull();
+    expect(container.querySelector('[data-axis-line="y"]')).not.toBeNull();
+  });
+
   it('muestra etiqueta, valor, variación, fecha y el mismo gráfico con ejes, sin fuente', () => {
     const { container } = renderModule('compact', state('fresh', ufReading));
 
