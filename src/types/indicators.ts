@@ -1,6 +1,6 @@
 // Identificadores
 export type IndicatorId = 'uf' | 'dolar' | 'euro' | 'utm' | 'libra_cobre';
-export type SourceId = 'mindicador' | 'findic' | 'cache';
+export type SourceId = 'mindicador' | 'findic';
 
 // Formato común al que normaliza cada adaptador
 export interface Observation {
@@ -35,7 +35,7 @@ export type FreshnessRule =
 
 // Contrato de cada fuente: cambiar de fuente es cambiar el adaptador, no el módulo
 export interface SourceAdapter {
-  id: Exclude<SourceId, 'cache'>;
+  id: SourceId;
   fetchReadings(
     ids: IndicatorId[],
     signal: AbortSignal,
@@ -49,7 +49,7 @@ export interface IndicatorModuleConfig {
   unit: 'CLP' | 'USD_PER_LB';
   freshness: FreshnessRule;
   /** Orden de la cadena de fuentes; la primera es la primaria */
-  sources: Array<Exclude<SourceId, 'cache'>>;
+  sources: SourceId[];
 }
 
 // Respuestas crudas observadas (solo las usan los adaptadores)

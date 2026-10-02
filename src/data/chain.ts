@@ -9,10 +9,8 @@ import type {
 import type { ReadingCache } from './cache';
 import { isFresh } from './freshness';
 
-type FetchedSourceId = Exclude<SourceId, 'cache'>;
-
 export interface ChainDeps {
-  adapters: Record<FetchedSourceId, SourceAdapter>;
+  adapters: Record<SourceId, SourceAdapter>;
   cache: ReadingCache;
   now(): Date;
   sleep(ms: number): Promise<void>;
@@ -73,7 +71,7 @@ export async function resolveReadings(
   // El orden de cada config manda: se agrupa por posición en su lista de fuentes.
   const maxDepth = Math.max(0, ...configs.map((c) => c.sources.length));
   for (let depth = 0; depth < maxDepth; depth++) {
-    const bySource = new Map<FetchedSourceId, IndicatorId[]>();
+    const bySource = new Map<SourceId, IndicatorId[]>();
     for (const id of pending) {
       const source = byId.get(id)!.sources[depth];
       if (source) bySource.set(source, [...(bySource.get(source) ?? []), id]);

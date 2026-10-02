@@ -17,7 +17,7 @@ type Readings = Partial<Record<IndicatorId, IndicatorReading>>;
 function reading(
   id: IndicatorId,
   date: string,
-  source: 'mindicador' | 'findic' | 'cache' = 'mindicador',
+  source: 'mindicador' | 'findic' = 'mindicador',
 ): IndicatorReading {
   return { id, current: { date, value: 100 }, source, fetchedAt: NOW.toISOString() };
 }
@@ -138,7 +138,7 @@ describe('resolveReadings', () => {
   });
 
   it('CA-04: ambas fallan y hay caché -> stale con la lectura de caché', async () => {
-    const cached = reading('uf', '2026-09-30', 'cache');
+    const cached = reading('uf', '2026-09-30', 'findic');
     const cache = memoryCache({ uf: cached });
     const mind = adapter('mindicador', async () => {
       throw new Error('red');
@@ -198,7 +198,7 @@ describe('resolveReadings', () => {
     const noFindic = () => adapter('findic', async () => ({}));
 
     it('dato no vigente de la fuente más nuevo que la caché -> se muestra el de la fuente', async () => {
-      const cached = reading('uf', '2026-09-28', 'cache');
+      const cached = reading('uf', '2026-09-28', 'findic');
       const result = await run(
         makeDeps(staleOnSource('2026-10-01'), noFindic(), memoryCache({ uf: cached })),
       );
@@ -208,7 +208,7 @@ describe('resolveReadings', () => {
     });
 
     it('dato no vigente de la fuente más antiguo que la caché -> se muestra la caché', async () => {
-      const cached = reading('uf', '2026-10-01', 'cache');
+      const cached = reading('uf', '2026-10-01', 'findic');
       const result = await run(
         makeDeps(staleOnSource('2026-09-28'), noFindic(), memoryCache({ uf: cached })),
       );
