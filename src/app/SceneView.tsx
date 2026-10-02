@@ -1,4 +1,5 @@
 import { IndicatorModule } from '../modules/indicator/IndicatorModule';
+import { Reel } from '../modules/reel/Reel';
 import type {
   IndicatorId,
   IndicatorModuleConfig,
@@ -18,7 +19,8 @@ function ModuleView({
   moduleRef,
   configs,
   states,
-}: Omit<Props, 'scene' | 'onComplete'> & { moduleRef: ModuleRef }) {
+  onComplete,
+}: Omit<Props, 'scene'> & { moduleRef: ModuleRef }) {
   switch (moduleRef.kind) {
     case 'indicator': {
       const config = configs.find((c) => c.id === moduleRef.id);
@@ -31,18 +33,25 @@ function ModuleView({
         />
       );
     }
-    // Se implementan en los módulos de reel y logos.
     case 'reel':
+      return <Reel onComplete={onComplete} />;
+    // Se implementa en el carrusel de logos.
     case 'logos':
       return null;
   }
 }
 
-export function SceneView({ scene, configs, states }: Props) {
+export function SceneView({ scene, configs, states, onComplete }: Props) {
   return (
     <div className={scene.layout === 'halves' ? styles.halves : styles.full}>
       {scene.modules.map((moduleRef, i) => (
-        <ModuleView key={i} moduleRef={moduleRef} configs={configs} states={states} />
+        <ModuleView
+          key={i}
+          moduleRef={moduleRef}
+          configs={configs}
+          states={states}
+          onComplete={onComplete}
+        />
       ))}
     </div>
   );
