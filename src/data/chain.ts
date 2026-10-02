@@ -59,6 +59,32 @@ async function fetchWithRetry(
   return undefined;
 }
 
+/** D-15: la serie siempre se pide a findic, un solo intento. Si falla, el estado no cambia. */
+async function enrichWithSeries(
+  states: Partial<Record<IndicatorId, IndicatorModuleState>>,
+  deps: ChainDeps,
+): Promise<void> {
+  const ids = Object.values(states)
+    .filter((s) => s.reading && !s.reading.series)
+    .map((s) => s.id);
+  if (ids.length === 0) return;
+
+  let readings: Readings;
+  try {
+    readings = await attempt(deps.adapters.findic, ids, deps);
+  } catch {
+    return;
+  }
+
+  for (const id of ids) {
+    const series = readings[id]?.series;
+    const state = states[id];
+    if (series && state?.reading) {
+      states[id] = { ...state, reading: { ...state.reading, series } };
+    }
+  }
+}
+
 export async function resolveReadings(
   configs: IndicatorModuleConfig[],
   deps: ChainDeps,
@@ -85,7 +111,6 @@ export async function resolveReadings(
         if (!reading) continue;
         if (isFresh(reading.current.date, byId.get(id)!.freshness, deps.now())) {
           states[id] = { id, status: 'fresh', reading };
-          deps.cache.write(reading);
         } else {
           const best = candidates.get(id);
           if (!best || reading.current.date > best.current.date) candidates.set(id, reading);
@@ -106,6 +131,13 @@ export async function resolveReadings(
           : candidate
         : (candidate ?? cached);
     states[id] = best ? { id, status: 'stale', reading: best } : { id, status: 'empty' };
+  }
+
+  await enrichWithSeries(states, deps);
+
+  // La caché se escribe al final para guardar las lecturas vigentes con su serie.
+  for (const state of Object.values(states)) {
+    if (state.status === 'fresh' && state.reading) deps.cache.write(state.reading);
   }
 
   return states as Record<IndicatorId, IndicatorModuleState>;

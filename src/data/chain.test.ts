@@ -19,7 +19,14 @@ function reading(
   date: string,
   source: 'mindicador' | 'findic' = 'mindicador',
 ): IndicatorReading {
-  return { id, current: { date, value: 100 }, source, fetchedAt: NOW.toISOString() };
+  return {
+    id,
+    current: { date, value: 100 },
+    // findic siempre entrega serie; mindicador nunca.
+    ...(source === 'findic' && { series: [{ date, value: 100 }] }),
+    source,
+    fetchedAt: NOW.toISOString(),
+  };
 }
 
 function freshAll(source: 'mindicador' | 'findic'): Readings {
@@ -82,7 +89,7 @@ afterEach(() => {
 });
 
 describe('resolveReadings', () => {
-  it('CA-01: mindicador vigente para los cinco -> todos fresh y findic no se llama', async () => {
+  it('CA-01: mindicador vigente para los cinco -> todos fresh con source mindicador', async () => {
     const mind = adapter('mindicador', async () => freshAll('mindicador'));
     const find = adapter('findic', async () => ({}));
     const cache = memoryCache();
@@ -95,7 +102,8 @@ describe('resolveReadings', () => {
     }
     expect(mind.fetchReadings).toHaveBeenCalledTimes(1);
     expect(mind.fetchReadings.mock.calls[0][0]).toEqual(ALL);
-    expect(find.fetchReadings).not.toHaveBeenCalled();
+    expect(find.fetchReadings).toHaveBeenCalledTimes(1); // solo para las series
+    expect(find.fetchReadings.mock.calls[0][0]).toEqual(ALL);
     expect(cache.writes).toHaveLength(5);
   });
 
@@ -122,16 +130,17 @@ describe('resolveReadings', () => {
       ...freshAll('mindicador'),
       uf: reading('uf', '2026-10-01'),
     }));
-    const find = adapter('findic', async (ids) => {
-      expect(ids).toEqual(['uf']);
-      return { uf: reading('uf', '2026-10-02', 'findic') };
-    });
+    const find = adapter('findic', async () => ({
+      uf: reading('uf', '2026-10-02', 'findic'),
+    }));
 
     const result = await run(makeDeps(mind, find));
 
     expect(mind.fetchReadings).toHaveBeenCalledTimes(1);
-    expect(find.fetchReadings).toHaveBeenCalledTimes(1);
+    expect(find.fetchReadings).toHaveBeenCalledTimes(2);
     expect(find.fetchReadings.mock.calls[0][0]).toEqual(['uf']);
+    // La UF ya trae serie de findic; la segunda llamada es solo para los demás.
+    expect(find.fetchReadings.mock.calls[1][0]).toEqual(['dolar', 'euro', 'utm', 'libra_cobre']);
     expect(result.uf.status).toBe('fresh');
     expect(result.uf.reading?.source).toBe('findic');
     expect(result.dolar.reading?.source).toBe('mindicador');
@@ -249,5 +258,100 @@ describe('resolveReadings', () => {
 
     expect(result.uf.status).toBe('stale');
     expect(cache.writes.map((r) => r.id).sort()).toEqual(['dolar', 'euro', 'libra_cobre', 'utm']);
+  });
+
+  describe('enriquecimiento de series (D-15)', () => {
+    const seriesFor = (id: IndicatorId): IndicatorReading['series'] => [
+      { date: '2026-10-01', value: 90 },
+      { date: id === 'utm' ? '2026-10-01' : '2026-10-02', value: 100 },
+    ];
+    const findicSeries = async (ids: IndicatorId[]): Promise<Readings> =>
+      Object.fromEntries(
+        ids.map((id) => [id, { ...reading(id, '2026-10-02', 'findic'), series: seriesFor(id) }]),
+      );
+
+    it('mindicador vigente y findic disponible -> fresh, source mindicador y serie de findic', async () => {
+      const mind = adapter('mindicador', async () => freshAll('mindicador'));
+      const find = adapter('findic', findicSeries);
+
+      const result = await run(makeDeps(mind, find));
+
+      for (const id of ALL) {
+        expect(result[id].status).toBe('fresh');
+        expect(result[id].reading?.source).toBe('mindicador');
+        expect(result[id].reading?.series).toEqual(seriesFor(id));
+        expect(result[id].reading?.current.date).toBe(id === 'utm' ? '2026-10-01' : '2026-10-02');
+      }
+    });
+
+    it('mindicador vigente y findic falla -> fresh sin serie y findic se llama una sola vez', async () => {
+      const mind = adapter('mindicador', async () => freshAll('mindicador'));
+      const find = adapter('findic', async () => {
+        throw new Error('red');
+      });
+
+      const result = await run(makeDeps(mind, find), 60_000);
+
+      expect(find.fetchReadings).toHaveBeenCalledTimes(1);
+      for (const id of ALL) {
+        expect(result[id].status).toBe('fresh');
+        expect(result[id].reading?.series).toBeUndefined();
+      }
+    });
+
+    it('findic sin respuesta a tiempo -> se aborta a los 8 s y no degrada el dato', async () => {
+      let signal: AbortSignal | undefined;
+      const mind = adapter('mindicador', async () => freshAll('mindicador'));
+      const find = adapter('findic', (_ids, s) => {
+        signal = s;
+        return new Promise(() => {});
+      });
+
+      const result = await run(makeDeps(mind, find), 8000);
+
+      expect(signal?.aborted).toBe(true);
+      expect(find.fetchReadings).toHaveBeenCalledTimes(1);
+      expect(result.uf.status).toBe('fresh');
+    });
+
+    it('valor resuelto desde findic -> no hay segunda llamada para la serie', async () => {
+      const mind = adapter('mindicador', async () => {
+        throw new Error('red');
+      });
+      const find = adapter('findic', findicSeries);
+
+      const result = await run(makeDeps(mind, find), 14_000);
+
+      expect(find.fetchReadings).toHaveBeenCalledTimes(1);
+      expect(result.uf.reading?.source).toBe('findic');
+      expect(result.uf.reading?.series).toEqual(seriesFor('uf'));
+    });
+
+    it('un dato stale sin serie también se enriquece sin cambiar su estado', async () => {
+      const mind = adapter('mindicador', async () => ({ uf: reading('uf', '2026-09-30') }));
+      const find = adapter('findic', async () => ({
+        uf: { ...reading('uf', '2026-09-30', 'findic'), series: seriesFor('uf') },
+      }));
+
+      const result = await run(makeDeps(mind, find));
+
+      expect(result.uf.status).toBe('stale');
+      expect(result.uf.reading?.source).toBe('mindicador');
+      expect(result.uf.reading?.series).toEqual(seriesFor('uf'));
+    });
+
+    it('la caché se escribe con la serie incluida', async () => {
+      const mind = adapter('mindicador', async () => freshAll('mindicador'));
+      const find = adapter('findic', findicSeries);
+      const cache = memoryCache();
+
+      await run(makeDeps(mind, find, cache));
+
+      expect(cache.writes).toHaveLength(5);
+      for (const written of cache.writes) {
+        expect(written.source).toBe('mindicador');
+        expect(written.series).toEqual(seriesFor(written.id));
+      }
+    });
   });
 });
