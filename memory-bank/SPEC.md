@@ -1,6 +1,6 @@
 # SPEC v1: Kiosco de indicadores financieros y mineros
 
-> **Estado:** borrador para validación · **Versión del documento:** 0.7 · **Fecha:** 2026-10-02
+> **Estado:** borrador para validación · **Versión del documento:** 0.8 · **Fecha:** 2026-10-02
 > **Alcance de este documento:** solo la v1. La v2 y la v3 se describen como contexto en la sección 3.
 
 ---
@@ -32,7 +32,7 @@ La asociación quiere que esa pantalla cumpla dos funciones:
 
 - Sin interacción: no hay mouse, teclado ni pantalla táctil.
 - Legible a distancia: valores grandes, pocos elementos por pantalla y alto contraste.
-- Pantalla horizontal Full HD (1920 × 1080) como objetivo principal.
+- Pantalla objetivo de **60 pulgadas vista a 4–5 m**; debe escalar a pantallas de eventos más grandes vistas desde más lejos. Full HD (1920 × 1080) es la resolución de referencia.
 - Debe funcionar al menos 12 horas seguidas sin recargar la página.
 
 ---
@@ -43,8 +43,9 @@ La asociación quiere que esa pantalla cumpla dos funciones:
 
 - Módulos de indicadores: **UF, dólar observado, euro, UTM y libra de cobre**.
 - **Mini gráfico de 30 días** en los módulos cuya fuente entregue serie reciente.
-- **Reel de asociados** como un módulo más, con un video ficticio de ejemplo.
-- **Rotación automática** de módulos en pantalla.
+- **Reel de asociados** como un módulo más, con un video ficticio de ejemplo (Fase 5b).
+- **Reel segmentado y carrusel de logos** de socios (Fase 5b).
+- **Zonas con listas de reproducción y perfiles** (`recepcion` por defecto e `indicadores`), con rotación automática de escenas (sección 6.4).
 - **Fuente primaria con respaldo**: mindicador.cl como primaria y findic.cl como respaldo.
 - **Validación de vigencia** de cada dato según la frecuencia real del indicador.
 - **Último valor conocido** guardado en el navegador, que se muestra marcado como desactualizado cuando no hay dato vigente.
@@ -62,6 +63,9 @@ La asociación quiere que esa pantalla cumpla dos funciones:
 | IPSA | No hay una fuente gratuita confiable: findic lo entrega con un mes de atraso | Por definir |
 | SII como fuente | Su RSS lleva semanas sin actualizarse y entrega XML con valores en texto | Descartado |
 | Base de datos histórica | Solo tiene sentido con datos que no se pueden volver a consultar | v3 |
+| Perfil `evento` | Combina contenido que aún no existe (próximos eventos, redes) | Futuro |
+| Módulo de próximos eventos | Requiere una fuente de agenda por definir | Futuro |
+| Módulo de redes sociales | Requiere backend: los tokens de las APIs no pueden ir en el frontend | Futuro |
 
 ### 3.3 Hoja de ruta
 
@@ -166,6 +170,14 @@ Observaciones que afectan el diseño:
 
 Cada módulo de indicador muestra el valor actual, la fecha del dato, la variación respecto del dato anterior (cuando hay serie) y el mini gráfico (cuando hay serie).
 
+**Variantes de presentación:** el mismo módulo se dibuja en tres variantes, elegidas por la escena que lo contiene. Los estados `loading`, `stale` y `empty` se comportan igual en las tres.
+
+| Variante | Contenido |
+|---|---|
+| `large` | Etiqueta, valor, variación con la fecha del dato anterior, fecha del dato, fuente ("Fuente: mindicador.cl" o "Fuente: findic.cl" según `reading.source`) y gráfico con ejes: tres valores en el eje Y (mínimo, medio y máximo), tres fechas en el eje X (inicio, mitad y fin, `dd-mm`), último punto destacado y rótulo del período ("Últimos N días hábiles"; "Últimos N meses" para la UTM) |
+| `compact` | Etiqueta, valor, variación, fecha y gráfico con solo mínimo y máximo rotulados |
+| `minimal` | Etiqueta, valor y variación, en una línea |
+
 ### 5.2 Reglas de vigencia
 
 Un dato está **vigente** si su fecha, convertida a `America/Santiago`, cumple la regla de su indicador:
@@ -253,15 +265,25 @@ empty   → fresh | stale | empty
 
 **Estado inicial (D-14):** se calcula desde la caché al montar la aplicación. Si hay una lectura guardada y sigue vigente, el módulo parte en `fresh`; si hay lectura pero no está vigente, en `stale`; si no hay caché, en `loading`. Por eso un módulo puede partir directamente en `fresh` o `stale`.
 
-### 6.4 Rotación en pantalla
+### 6.4 Presentación: zonas, listas de reproducción y perfiles (D-17)
 
-- Se muestra **un módulo a la vez**, a pantalla completa, con una barra fija que muestra la fecha y la hora.
-- **Tiempo por módulo de indicador:** 15 segundos (configurable).
-- **El reel** avanza cuando termina el video o al llegar a su máximo.
-- **Orden por defecto:** cobre → dólar → reel → UF → euro → UTM → (vuelve al inicio).
-- **Se saltan** los módulos en estado `empty` y el reel si falló.
-- **Si todos los módulos de indicador están `empty`,** la pantalla muestra solo el reel. Si el reel también falló, muestra la barra con fecha y hora y un mensaje neutro ("Indicadores no disponibles por el momento").
-- **La rotación es independiente del ciclo de datos:** una fuente lenta nunca congela la pantalla.
+La pantalla se divide en **zonas**. La zona principal reproduce una **lista de reproducción** de **escenas**; la zona secundaria no rota.
+
+- **Escena:** uno o dos módulos con un layout (`full` o `halves`) y una duración (15 s por defecto en los perfiles de la v1).
+- **Lista de reproducción:** `sequential` (en orden, y vuelve al inicio) o `shuffle`.
+- **Barajado sin repetición (D-19):** se baraja con Fisher-Yates en cada vuelta; todas las escenas aparecen una vez por vuelta y la primera de una vuelta nunca repite la última de la anterior.
+- **Se salta** una escena si todos sus módulos de indicador están en estado `empty`. Si ninguna escena es reproducible, la zona principal muestra "Indicadores no disponibles por el momento" y reintenta cada pocos segundos.
+- **La zona secundaria** muestra los indicadores en variante `minimal` y oculta los que están `empty`.
+- **La reproducción es independiente del ciclo de datos:** una fuente lenta nunca congela la pantalla.
+
+**Perfiles.** Se eligen con `?perfil=`; un valor ausente o desconocido usa `recepcion`.
+
+| Perfil | Layout | Zona principal | Zona secundaria |
+|---|---|---|---|
+| `recepcion` (por defecto) | `main-strip` | Secuencial, escenas de 15 s: cobre (`full`, `large`); dólar y euro (`halves`, `compact`); UF y UTM (`halves`, `compact`) | Franja con los cinco indicadores en `minimal` (D-18) |
+| `indicadores` | `featured-sidebar` | `shuffle`, una escena `full` `large` por indicador | Barra lateral con los demás indicadores en `minimal` (omite el destacado) |
+
+Pendiente para la Fase 5b: el reel, el carrusel de logos y la barra con fecha y hora.
 
 ---
 
@@ -395,7 +417,7 @@ src/
 
 | Requisito | Criterio |
 |---|---|
-| Legibilidad | El valor principal se lee a 4 metros en una pantalla de 50 pulgadas (tamaño mínimo de referencia: 120 px a 1080p) |
+| Legibilidad | El valor principal se lee a 4–5 m en una pantalla de 60 pulgadas. Los tamaños se definen en unidades relativas a la pantalla (`vh`, `vw`, `clamp`) para que escalen a pantallas más grandes vistas desde más lejos (D-20). El ajuste tipográfico fino queda como trabajo posterior, validado frente a una pantalla real a distancia |
 | Contraste | Texto con contraste AA o superior; el estado `stale` no depende solo del color (incluye texto) |
 | Estabilidad | 12 horas de funcionamiento sin recargar y sin crecimiento sostenido de memoria |
 | Resiliencia | Sin internet, la pantalla sigue rotando con lo que tenga en caché |
@@ -511,6 +533,10 @@ done
 | D-14 | Estado inicial calculado desde la caché | Partir siempre en loading | Un dato guardado que sigue vigente no debe mostrarse como cargando ni como desactualizado; además cumple el requisito de primer módulo en < 3 s |
 | D-15 | La serie siempre se pide a findic, un solo intento | Usar la serie solo cuando el valor viene de findic | Valor y serie son responsabilidades distintas; la serie complementa y no justifica reintentos |
 | D-16 | Agrupación de miles siempre (`useGrouping: 'always'`) | Formato por defecto de es-CL | es-CL sigue la norma RAE de no agrupar cifras de 4 dígitos, pero la convención financiera chilena escribe $1.104,57 |
+| D-17 | Zonas con listas de reproducción y perfiles | Una sola rotación de módulos | Una misma app sirve a recepción, oficina y eventos; es el modelo estándar de señalética digital |
+| D-18 | Franja fija de indicadores en recepción | Indicadores solo dentro de la rotación | Ningún valor desaparece mientras corre otro contenido |
+| D-19 | Barajado sin repetición | Aleatorio puro | Garantiza que todos aparezcan en cada vuelta y evita repeticiones seguidas |
+| D-20 | Unidades relativas a la pantalla | Píxeles fijos | La misma configuración escala a pantallas más grandes vistas desde más lejos |
 
 ---
 
