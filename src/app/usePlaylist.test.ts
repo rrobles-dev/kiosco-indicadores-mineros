@@ -33,7 +33,7 @@ const timed = (id: string, durationMs: number): Scene => ({
 const byContent = (id: string, maxDurationMs: number): Scene => ({
   id,
   layout: 'full',
-  modules: [{ kind: 'reel' }],
+  modules: [{ kind: 'video' }],
   maxDurationMs,
 });
 
@@ -93,14 +93,14 @@ describe('usePlaylist: escenas por tiempo', () => {
 });
 
 describe('usePlaylist: escenas por contenido', () => {
-  const playlist = () => sequential(byContent('reel', 90_000), timed('b', 15_000));
+  const playlist = () => sequential(byContent('video', 90_000), timed('b', 15_000));
 
   it('avanza cuando el módulo llama a onComplete, antes del tope', () => {
     const { result } = render(playlist());
-    expect(result.current.scene?.id).toBe('reel');
+    expect(result.current.scene?.id).toBe('video');
 
     act(() => void vi.advanceTimersByTime(20_000));
-    expect(result.current.scene?.id).toBe('reel');
+    expect(result.current.scene?.id).toBe('video');
 
     act(() => result.current.onComplete());
     expect(result.current.scene?.id).toBe('b');
@@ -109,7 +109,7 @@ describe('usePlaylist: escenas por contenido', () => {
   it('avanza por el tope si onComplete nunca llega', () => {
     const { result } = render(playlist());
     act(() => void vi.advanceTimersByTime(89_999));
-    expect(result.current.scene?.id).toBe('reel');
+    expect(result.current.scene?.id).toBe('video');
     act(() => void vi.advanceTimersByTime(1));
     expect(result.current.scene?.id).toBe('b');
   });

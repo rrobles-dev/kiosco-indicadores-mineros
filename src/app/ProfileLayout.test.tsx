@@ -61,13 +61,13 @@ const allEmpty = () => makeStates(Object.fromEntries(ALL.map((id) => [id, 'empty
 const UNAVAILABLE = 'Indicadores no disponibles por el momento';
 
 // Cada escena programa su timer tras renderizar: no se pueden encadenar dos en un solo avance.
-const goToReel = () => {
+const goToVideo = () => {
   advance(15_000);
   advance(15_000);
 };
 
 describe('ProfileLayout main-strip (recepcion)', () => {
-  it('recorre cobre, dólar y euro, reel, UF y UTM, logos y vuelve al inicio', () => {
+  it('recorre cobre, dólar y euro, video, UF y UTM, logos y vuelve al inicio', () => {
     renderProfile();
     expect(heading('libra_cobre')).toBeInTheDocument();
     expect(heading('dolar')).toBeNull();
@@ -83,7 +83,7 @@ describe('ProfileLayout main-strip (recepcion)', () => {
     expect(video()).not.toBeNull();
     expect(heading('dolar')).toBeNull();
 
-    // El reel no avanza por tiempo corto: espera a que termine el video.
+    // La escena de video no avanza por tiempo corto: espera a que termine el video.
     advance(20_000);
     expect(video()).not.toBeNull();
     fireEvent.ended(video()!);
@@ -102,17 +102,17 @@ describe('ProfileLayout main-strip (recepcion)', () => {
     expect(heading('libra_cobre')).toBeInTheDocument();
   });
 
-  it('si el video del reel falla, la escena se salta de inmediato', () => {
+  it('si el video falla, la escena se salta de inmediato', () => {
     renderProfile();
-    goToReel();
+    goToVideo();
     fireEvent.error(video()!);
     expect(video()).toBeNull();
     expect(heading('uf')).toBeInTheDocument();
   });
 
-  it('el reel avanza por el tope de 90 s si el video nunca termina', () => {
+  it('la escena de video avanza por el tope de 90 s si el video nunca termina', () => {
     renderProfile();
-    goToReel();
+    goToVideo();
     advance(89_999);
     expect(video()).not.toBeNull();
     advance(1);
@@ -120,7 +120,7 @@ describe('ProfileLayout main-strip (recepcion)', () => {
     expect(heading('uf')).toBeInTheDocument();
   });
 
-  it('la franja permanece en todas las escenas, incluidos el reel y los logos', () => {
+  it('la franja permanece en todas las escenas, incluidos el video y los logos', () => {
     renderProfile();
     const stripHas = () => {
       const strip = within(screen.getByRole('complementary'));
@@ -163,7 +163,7 @@ describe('ProfileLayout main-strip (recepcion)', () => {
     expect(strip.queryByText(label('utm'))).toBeNull();
   });
 
-  it('con todos los indicadores empty sigue mostrando el reel y los logos', () => {
+  it('con todos los indicadores empty sigue mostrando el video y los logos', () => {
     renderProfile(recepcion, allEmpty());
     expect(video()).not.toBeNull();
     expect(screen.queryByText(UNAVAILABLE)).toBeNull();

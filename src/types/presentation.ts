@@ -5,7 +5,7 @@ export type IndicatorVariant = 'large' | 'compact' | 'minimal';
 /** Unión discriminada por `kind`. */
 export type ModuleRef =
   | { kind: 'indicator'; id: IndicatorId; variant: IndicatorVariant }
-  | { kind: 'reel' }
+  | { kind: 'video' }
   | { kind: 'logos' };
 
 interface SceneBase {

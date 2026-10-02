@@ -1,7 +1,7 @@
 import { MEMBERS } from '../config/members';
 import { IndicatorModule } from '../modules/indicator/IndicatorModule';
 import { Logos } from '../modules/logos/Logos';
-import { Reel } from '../modules/reel/Reel';
+import { Video } from '../modules/video/Video';
 import type {
   IndicatorId,
   IndicatorModuleConfig,
@@ -37,8 +37,8 @@ function ModuleView({
         />
       );
     }
-    case 'reel':
-      return <Reel onComplete={onComplete} />;
+    case 'video':
+      return <Video onComplete={onComplete} />;
     case 'logos':
       return <Logos members={MEMBERS} random={random} onComplete={onComplete} />;
   }

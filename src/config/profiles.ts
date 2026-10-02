@@ -16,7 +16,7 @@ const pair = (id: string, a: IndicatorId, b: IndicatorId): Scene => ({
 const ALL_INDICATORS: IndicatorId[] = ['libra_cobre', 'dolar', 'euro', 'uf', 'utm'];
 
 // Tope de seguridad de las escenas que terminan por contenido (D-23).
-const REEL_MAX_MS = 90_000;
+const VIDEO_MAX_MS = 90_000;
 const LOGOS_MAX_MS = 30_000;
 
 export const recepcion: Profile = {
@@ -32,7 +32,7 @@ export const recepcion: Profile = {
         durationMs: SCENE_MS,
       },
       pair('dolar-euro', 'dolar', 'euro'),
-      { id: 'reel', layout: 'full', modules: [{ kind: 'reel' }], maxDurationMs: REEL_MAX_MS },
+      { id: 'video', layout: 'full', modules: [{ kind: 'video' }], maxDurationMs: VIDEO_MAX_MS },
       pair('uf-utm', 'uf', 'utm'),
       { id: 'logos', layout: 'full', modules: [{ kind: 'logos' }], maxDurationMs: LOGOS_MAX_MS },
     ],
