@@ -32,15 +32,29 @@ describe('getProfileFromSearch', () => {
 const describeModule = (m: ModuleRef) => (m.kind === 'indicator' ? `${m.id}:${m.variant}` : m.kind);
 
 describe('perfiles', () => {
-  it('recepcion: cobre full large, luego dólar y euro, luego UF y UTM, de 15 s', () => {
+  it('recepcion: cobre, dólar y euro, reel, UF y UTM, logos', () => {
     const { scenes, mode } = recepcion.main;
     expect(mode).toBe('sequential');
     expect(scenes.map((s) => [s.layout, s.modules.map(describeModule)])).toEqual([
       ['full', ['libra_cobre:large']],
       ['halves', ['dolar:compact', 'euro:compact']],
+      ['full', ['reel']],
       ['halves', ['uf:compact', 'utm:compact']],
+      ['full', ['logos']],
     ]);
-    expect(scenes.every((s) => s.durationMs === 15_000)).toBe(true);
+  });
+
+  it('recepcion: indicadores de 15 s; reel y logos terminan por contenido con tope', () => {
+    const byId = Object.fromEntries(recepcion.main.scenes.map((s) => [s.id, s]));
+    for (const id of ['cobre', 'dolar-euro', 'uf-utm']) {
+      expect(byId[id].durationMs).toBe(15_000);
+      expect(byId[id].maxDurationMs).toBeUndefined();
+    }
+    expect(byId.reel.durationMs).toBeUndefined();
+    expect(byId.reel.maxDurationMs).toBe(90_000);
+    expect(byId.logos.durationMs).toBeUndefined();
+    // 12 socios en 2 páginas de 8 s = 16 s; el tope debe cubrirlo con margen.
+    expect(byId.logos.maxDurationMs).toBeGreaterThan(16_000);
   });
 
   it('indicadores: shuffle con una escena full large por indicador', () => {
