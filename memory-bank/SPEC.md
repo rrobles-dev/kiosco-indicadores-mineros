@@ -1,6 +1,6 @@
 # SPEC v1: Kiosco de indicadores financieros y mineros
 
-> **Estado:** borrador para validación · **Versión del documento:** 0.5 · **Fecha:** 2026-10-02
+> **Estado:** borrador para validación · **Versión del documento:** 0.6 · **Fecha:** 2026-10-02
 > **Alcance de este documento:** solo la v1. La v2 y la v3 se describen como contexto en la sección 3.
 
 ---
@@ -250,6 +250,8 @@ stale   → fresh | stale
 empty   → fresh | stale | empty
 ```
 
+**Estado inicial (D-14):** se calcula desde la caché al montar la aplicación. Si hay una lectura guardada y sigue vigente, el módulo parte en `fresh`; si hay lectura pero no está vigente, en `stale`; si no hay caché, en `loading`. Por eso un módulo puede partir directamente en `fresh` o `stale`.
+
 ### 6.4 Rotación en pantalla
 
 - Se muestra **un módulo a la vez**, a pantalla completa, con una barra fija que muestra la fecha y la hora.
@@ -267,7 +269,7 @@ empty   → fresh | stale | empty
 ```typescript
 // Identificadores
 export type IndicatorId = 'uf' | 'dolar' | 'euro' | 'utm' | 'libra_cobre';
-export type SourceId = 'mindicador' | 'findic' | 'cache';
+export type SourceId = 'mindicador' | 'findic';
 
 // Formato común al que normaliza cada adaptador
 export interface Observation {
@@ -302,7 +304,7 @@ export type FreshnessRule =
 
 // Contrato de cada fuente: cambiar de fuente es cambiar el adaptador, no el módulo
 export interface SourceAdapter {
-  id: Exclude<SourceId, 'cache'>;
+  id: SourceId;
   fetchReadings(
     ids: IndicatorId[],
     signal: AbortSignal,
@@ -314,9 +316,13 @@ export interface IndicatorModuleConfig {
   id: IndicatorId;
   label: string;
   unit: 'CLP' | 'USD_PER_LB';
+  /** Decimales fijos al mostrar el valor */
+  decimals: number;
+  /** Cantidad de observaciones de la serie que se grafican */
+  chartPoints: number;
   freshness: FreshnessRule;
   /** Orden de la cadena de fuentes; la primera es la primaria */
-  sources: Array<Exclude<SourceId, 'cache'>>;
+  sources: SourceId[];
 }
 
 // Respuestas crudas observadas (solo las usan los adaptadores)
@@ -500,11 +506,14 @@ done
 | D-10 | Etiquetas desde la configuración | Usar el campo `nombre` de cada API | Las fuentes nombran distinto el mismo indicador; la pantalla debe ser consistente al cambiar de fuente |
 | D-11 | React 19 en vez de 18 | React 18 | Es la versión del template actual; no hay diferencias relevantes para esta app |
 | D-12 | En stale se muestra la observación más reciente entre fuentes no vigentes y caché | Mostrar siempre la caché | Lo que se muestra como desactualizado debe ser lo menos desactualizado posible |
+| D-13 | Eliminar "cache" de SourceId | Marcar las lecturas de caché con source "cache" | source indica de dónde viene el dato; la caché es un almacenamiento, no una fuente |
+| D-14 | Estado inicial calculado desde la caché | Partir siempre en loading | Un dato guardado que sigue vigente no debe mostrarse como cargando ni como desactualizado; además cumple el requisito de primer módulo en < 3 s |
 
 ---
 
 ## 14. Preguntas abiertas
 
 1. ¿El orden de rotación por defecto (cobre primero) representa bien la prioridad de la audiencia?
+2. **Pendiente técnico:** `sleep` cancelable con `AbortSignal`, para liberar el timer de timeout de la cadena cuando la fuente responde a tiempo. Hoy ese timer queda pendiente hasta vencer (8 s) sin efecto; no es un bug, es una mejora.
 2. ¿15 segundos por módulo es suficiente para leer valor, fecha y variación a distancia?
 3. ¿Se quiere mostrar la fuente del dato en pantalla ("Fuente: mindicador.cl")? Es buena práctica de transparencia, pero agrega texto.
