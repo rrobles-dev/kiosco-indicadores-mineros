@@ -45,6 +45,11 @@ npm run lint    # ESLint
 - Mensajes en español.
 - Un commit por cambio lógico; no mezclar refactor con funcionalidad nueva.
 
+## Changelog
+
+- Todo commit `feat:`, `fix:` o `refactor:` con efecto visible agrega o ajusta una línea en la sección `[Unreleased]` de [`CHANGELOG.md`](CHANGELOG.md), redactada en lenguaje de producto.
+- Los commits de pruebas, docs internos y `chore:` no requieren entrada.
+
 ## Documentación
 
 - Si una decisión cambia o se agrega una nueva, regístrala en la sección 13 de la spec con su motivo.

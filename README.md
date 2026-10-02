@@ -73,6 +73,7 @@ Los valores de los indicadores provienen originalmente del Banco Central de Chil
 
 - [`memory-bank/SPEC.md`](memory-bank/SPEC.md): especificación de la v1, con contratos de datos verificados, reglas de vigencia, criterios de aceptación y registro de decisiones.
 - [`AGENTS.md`](AGENTS.md): instrucciones para agentes de IA que trabajen en el repo.
+- [`CHANGELOG.md`](CHANGELOG.md): cambios del producto por versión.
 
 ## Licencia
 
