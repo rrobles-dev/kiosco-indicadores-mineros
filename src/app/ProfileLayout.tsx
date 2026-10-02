@@ -38,7 +38,7 @@ export function ProfileLayout({ profile, configs, states, random = Math.random }
     <div className={`${styles.root} ${styles[profile.layout]}`} data-layout={profile.layout}>
       <main className={styles.main}>
         {scene ? (
-          <SceneView key={step} scene={scene} configs={configs} states={states} onComplete={onComplete} />
+          <SceneView key={step} scene={scene} configs={configs} states={states} onComplete={onComplete} random={random} />
         ) : (
           <p className={styles.unavailable}>Indicadores no disponibles por el momento</p>
         )}

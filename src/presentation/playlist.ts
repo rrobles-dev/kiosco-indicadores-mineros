@@ -1,19 +1,10 @@
+import { shuffle } from '../lib/shuffle';
 import type { IndicatorId, IndicatorModuleState } from '../types/indicators';
 import type { Playlist, Scene } from '../types/presentation';
 
 export interface PlaylistEngine {
   /** Siguiente escena reproducible, o null si ninguna lo es. */
   next(isPlayable: (scene: Scene) => boolean): Scene | null;
-}
-
-/** Fisher-Yates con el random inyectado. */
-function shuffled(length: number, random: () => number): number[] {
-  const order = Array.from({ length }, (_, i) => i);
-  for (let i = length - 1; i > 0; i--) {
-    const j = Math.floor(random() * (i + 1));
-    [order[i], order[j]] = [order[j], order[i]];
-  }
-  return order;
 }
 
 export function createPlaylist(playlist: Playlist, random: () => number): PlaylistEngine {
@@ -26,7 +17,10 @@ export function createPlaylist(playlist: Playlist, random: () => number): Playli
     if (mode === 'sequential') {
       order = scenes.map((_, i) => i);
     } else {
-      order = shuffled(scenes.length, random);
+      order = shuffle(
+        scenes.map((_, i) => i),
+        random,
+      );
       // La primera de la vuelta no repite la última de la anterior.
       if (order.length > 1 && order[0] === last) {
         [order[0], order[1]] = [order[1], order[0]];

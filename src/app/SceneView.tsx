@@ -1,4 +1,6 @@
+import { MEMBERS } from '../config/members';
 import { IndicatorModule } from '../modules/indicator/IndicatorModule';
+import { Logos } from '../modules/logos/Logos';
 import { Reel } from '../modules/reel/Reel';
 import type {
   IndicatorId,
@@ -13,6 +15,7 @@ interface Props {
   configs: IndicatorModuleConfig[];
   states: Record<IndicatorId, IndicatorModuleState>;
   onComplete: () => void;
+  random: () => number;
 }
 
 function ModuleView({
@@ -20,6 +23,7 @@ function ModuleView({
   configs,
   states,
   onComplete,
+  random,
 }: Omit<Props, 'scene'> & { moduleRef: ModuleRef }) {
   switch (moduleRef.kind) {
     case 'indicator': {
@@ -35,13 +39,12 @@ function ModuleView({
     }
     case 'reel':
       return <Reel onComplete={onComplete} />;
-    // Se implementa en el carrusel de logos.
     case 'logos':
-      return null;
+      return <Logos members={MEMBERS} random={random} onComplete={onComplete} />;
   }
 }
 
-export function SceneView({ scene, configs, states, onComplete }: Props) {
+export function SceneView({ scene, configs, states, onComplete, random }: Props) {
   return (
     <div className={scene.layout === 'halves' ? styles.halves : styles.full}>
       {scene.modules.map((moduleRef, i) => (
@@ -51,6 +54,7 @@ export function SceneView({ scene, configs, states, onComplete }: Props) {
           configs={configs}
           states={states}
           onComplete={onComplete}
+          random={random}
         />
       ))}
     </div>

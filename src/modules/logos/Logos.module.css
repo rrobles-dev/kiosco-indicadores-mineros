@@ -1,0 +1,26 @@
+/* Páginas de 6 logos en 3 columnas; los tamaños se ajustan después. */
+.page {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 3vh 2vw;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  min-width: 0;
+  border: 1px solid #d0d5dd;
+  border-radius: 1vh;
+  background: #fff;
+}
+
+.logo {
+  max-width: 90%;
+  max-height: 90%;
+}
