@@ -1,75 +1,77 @@
-# React + TypeScript + Vite
+# Kiosco de indicadores mineros
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Pantalla de recepción con indicadores financieros y mineros de Chile, pensada para funcionar sola todo el día.
 
-Currently, two official plugins are available:
+> **Estado:** en desarrollo (v1). La especificación completa está en [`memory-bank/SPEC.md`](memory-bank/SPEC.md).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## El problema
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Una asociación gremial de proveedores de la minería recibe a socios y asistentes a eventos en su sede. Mientras esperan en recepción, o antes de que comience un evento, tienen frente a sí una pantalla que no comunica nada.
 
-## Expanding the ESLint configuration
+La asociación quiere que esa pantalla:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Informe** los indicadores que su audiencia consulta a diario: el precio del cobre, el dólar, la UF.
+- **Dé visibilidad a sus socios** con un reel de las empresas asociadas.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+La restricción que define el diseño: **nadie opera la pantalla.** Tiene que funcionar sola toda la jornada, tolerar caídas de internet o de las fuentes de datos y nunca mostrar un error o un dato antiguo como si fuera actual.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+> Este proyecto reconstruye desde cero una solución real con datos públicos y contenido ficticio. No contiene código, datos ni material de la organización original.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+---
 
+## Cómo lo resuelve
+
+| Necesidad | Solución |
+|---|---|
+| Que la pantalla no dependa de una sola fuente | Cada indicador tiene una fuente primaria y una de respaldo |
+| Que nunca muestre un dato viejo como actual | Cada dato se valida contra la frecuencia real de su indicador. El dólar solo se fija en días hábiles; la UF, todos los días |
+| Que una falla no deje la pantalla vacía | Se muestra el último valor conocido, rotulado con su fecha |
+| Que una fuente lenta no congele la pantalla | La rotación de módulos es independiente de la carga de datos |
+| Que cambiar de fuente no obligue a reescribir la interfaz | Un adaptador por fuente; los componentes no saben de dónde viene el dato |
+
+---
+
+## Indicadores de la v1
+
+UF · dólar observado · euro · UTM · libra de cobre, cada uno con mini gráfico de su serie reciente, más un reel de asociados de ejemplo.
+
+## Hoja de ruta
+
+| Versión | Foco | Estado |
+|---|---|---|
+| **v1** | Kiosco solo frontend con datos diarios, fuente de respaldo y validación de vigencia | 🚧 En desarrollo |
+| **v2** | Backend: fuentes oficiales con credenciales (Banco Central, CMF), cobre en vivo, ETL de datos de Cochilco, clima y sismos en regiones mineras | Planificada |
+| **v3** | Base de datos y módulos históricos | Planificada |
+
+---
+
+## Stack
+
+React · TypeScript · Vite · Vitest · React Testing Library
+
+## Cómo correrlo
+
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+## Fuentes de datos
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+| Fuente | Uso |
+|---|---|
+| [mindicador.cl](https://mindicador.cl) | Fuente primaria de los indicadores diarios |
+| [findic.cl](https://findic.cl) | Fuente de respaldo y series recientes |
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Los valores de los indicadores provienen originalmente del Banco Central de Chile y otros organismos públicos, a través de estos servicios.
 
-```
+## Documentación
+
+- [`memory-bank/SPEC.md`](memory-bank/SPEC.md): especificación de la v1, con contratos de datos verificados, reglas de vigencia, criterios de aceptación y registro de decisiones.
+- [`AGENTS.md`](AGENTS.md): instrucciones para agentes de IA que trabajen en el repo.
+
+## Licencia
+
+[MIT](LICENSE)
