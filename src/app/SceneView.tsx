@@ -11,13 +11,14 @@ interface Props {
   scene: Scene;
   configs: IndicatorModuleConfig[];
   states: Record<IndicatorId, IndicatorModuleState>;
+  onComplete: () => void;
 }
 
 function ModuleView({
   moduleRef,
   configs,
   states,
-}: Omit<Props, 'scene'> & { moduleRef: ModuleRef }) {
+}: Omit<Props, 'scene' | 'onComplete'> & { moduleRef: ModuleRef }) {
   switch (moduleRef.kind) {
     case 'indicator': {
       const config = configs.find((c) => c.id === moduleRef.id);
@@ -30,6 +31,10 @@ function ModuleView({
         />
       );
     }
+    // Se implementan en los módulos de reel y logos.
+    case 'reel':
+    case 'logos':
+      return null;
   }
 }
 

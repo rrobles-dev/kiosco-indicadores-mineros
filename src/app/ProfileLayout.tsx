@@ -26,7 +26,7 @@ function featuredIds(scene: Scene | null): Set<IndicatorId> {
 }
 
 export function ProfileLayout({ profile, configs, states, random = Math.random }: Props) {
-  const scene = usePlaylist(profile.main, states, { random });
+  const { scene, step, onComplete } = usePlaylist(profile.main, states, { random });
 
   // En la barra lateral se omite lo que la zona principal ya destaca; la franja los muestra todos.
   const excluded = profile.layout === 'featured-sidebar' ? featuredIds(scene) : new Set<IndicatorId>();
@@ -38,7 +38,7 @@ export function ProfileLayout({ profile, configs, states, random = Math.random }
     <div className={`${styles.root} ${styles[profile.layout]}`} data-layout={profile.layout}>
       <main className={styles.main}>
         {scene ? (
-          <SceneView scene={scene} configs={configs} states={states} />
+          <SceneView key={step} scene={scene} configs={configs} states={states} onComplete={onComplete} />
         ) : (
           <p className={styles.unavailable}>Indicadores no disponibles por el momento</p>
         )}

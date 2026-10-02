@@ -61,6 +61,9 @@ export function isScenePlayable(
     switch (ref.kind) {
       case 'indicator':
         return states[ref.id]?.status !== 'empty';
+      case 'reel':
+      case 'logos':
+        return true;
     }
   });
 }

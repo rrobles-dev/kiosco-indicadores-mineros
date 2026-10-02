@@ -2,19 +2,24 @@ import type { IndicatorId } from './indicators';
 
 export type IndicatorVariant = 'large' | 'compact' | 'minimal';
 
-/** Unión discriminada por `kind`: la Fase 5b agrega `reel` y `logos` sin romper los consumidores. */
-export type ModuleRef = {
-  kind: 'indicator';
-  id: IndicatorId;
-  variant: IndicatorVariant;
-};
+/** Unión discriminada por `kind`. */
+export type ModuleRef =
+  | { kind: 'indicator'; id: IndicatorId; variant: IndicatorVariant }
+  | { kind: 'reel' }
+  | { kind: 'logos' };
 
-export interface Scene {
+interface SceneBase {
   id: string;
   layout: 'full' | 'halves';
   modules: ModuleRef[];
-  durationMs: number;
 }
+
+/**
+ * Con `durationMs` la escena termina por tiempo. Sin él termina cuando el módulo
+ * llama a onComplete, y `maxDurationMs` es el tope de seguridad obligatorio.
+ */
+export type Scene = SceneBase &
+  ({ durationMs: number; maxDurationMs?: undefined } | { durationMs?: undefined; maxDurationMs: number });
 
 export interface Playlist {
   mode: 'sequential' | 'shuffle';

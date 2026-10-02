@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { isScenePlayable, createPlaylist, type PlaylistEngine } from '../presentation/playlist';
 import type { IndicatorId, IndicatorModuleState } from '../types/indicators';
 import type { Playlist, Scene } from '../types/presentation';
@@ -11,6 +11,14 @@ export interface UsePlaylistDeps {
   emptyRetryMs?: number;
 }
 
+export interface PlaylistPlayback {
+  scene: Scene | null;
+  /** Cambia en cada avance, aunque la escena se repita; sirve de key para remontar la escena. */
+  step: number;
+  /** Para los módulos que terminan por contenido; ignora llamadas de escenas anteriores. */
+  onComplete: () => void;
+}
+
 const defaultSetTimer = (callback: () => void, ms: number) => setTimeout(callback, ms);
 const defaultClearTimer = (handle: unknown) =>
   clearTimeout(handle as ReturnType<typeof setTimeout>);
@@ -18,7 +26,6 @@ const defaultClearTimer = (handle: unknown) =>
 interface Current {
   engine: PlaylistEngine;
   scene: Scene | null;
-  /** Cambia en cada avance, aunque la escena se repita, para reiniciar el timer. */
   step: number;
 }
 
@@ -32,7 +39,7 @@ export function usePlaylist(
     clearTimer = defaultClearTimer,
     emptyRetryMs = 5000,
   }: UsePlaylistDeps,
-): Scene | null {
+): PlaylistPlayback {
   const [current, setCurrent] = useState<Current>(() => {
     const engine = createPlaylist(playlist, random);
     return { engine, scene: engine.next((s) => isScenePlayable(s, states)), step: 0 };
@@ -43,16 +50,27 @@ export function usePlaylist(
     statesRef.current = states;
   });
 
-  useEffect(() => {
-    const timer = setTimer(
-      () => {
-        const scene = current.engine.next((s) => isScenePlayable(s, statesRef.current));
-        setCurrent((c) => ({ ...c, scene, step: c.step + 1 }));
-      },
-      current.scene?.durationMs ?? emptyRetryMs,
-    );
-    return () => clearTimer(timer);
-  }, [current, setTimer, clearTimer, emptyRetryMs]);
+  // Paso vigente: lo que ocurra primero (timer u onComplete) lo consume y el otro se ignora.
+  const stepRef = useRef(0);
+  const { engine, scene, step } = current;
 
-  return current.scene;
+  const advance = useCallback(
+    (fromStep: number) => {
+      if (stepRef.current !== fromStep) return;
+      stepRef.current = fromStep + 1;
+      const next = engine.next((s) => isScenePlayable(s, statesRef.current));
+      setCurrent((c) => ({ ...c, scene: next, step: fromStep + 1 }));
+    },
+    [engine],
+  );
+
+  useEffect(() => {
+    const delay = scene ? (scene.durationMs ?? scene.maxDurationMs) : emptyRetryMs;
+    const timer = setTimer(() => advance(step), delay);
+    return () => clearTimer(timer);
+  }, [scene, step, advance, setTimer, clearTimer, emptyRetryMs]);
+
+  const onComplete = useMemo(() => () => advance(step), [advance, step]);
+
+  return { scene, step, onComplete };
 }
