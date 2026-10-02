@@ -1,3 +1,4 @@
+import { isCalendarDate } from '../../lib/dates';
 import type {
   IndicatorId,
   IndicatorReading,
@@ -9,20 +10,6 @@ const FINDIC_URL = 'https://findic.cl/api';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-// Valida formato y existencia en el calendario sin interpretar la fecha como instante.
-function isCalendarDate(value: unknown): value is string {
-  if (typeof value !== 'string') return false;
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-  if (!match) return false;
-  const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])];
-  const check = new Date(Date.UTC(year, month - 1, day));
-  return (
-    check.getUTCFullYear() === year &&
-    check.getUTCMonth() === month - 1 &&
-    check.getUTCDate() === day
-  );
 }
 
 export function parseFindicSeries(

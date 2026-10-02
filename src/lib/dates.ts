@@ -16,3 +16,17 @@ export function toSantiagoDate(isoUtc: string): string {
   );
   return `${parts.year}-${parts.month}-${parts.day}`;
 }
+
+/** Valida formato YYYY-MM-DD y existencia en el calendario, sin interpretarla como instante. */
+export function isCalendarDate(value: unknown): value is string {
+  if (typeof value !== 'string') return false;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return false;
+  const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])];
+  const check = new Date(Date.UTC(year, month - 1, day));
+  return (
+    check.getUTCFullYear() === year &&
+    check.getUTCMonth() === month - 1 &&
+    check.getUTCDate() === day
+  );
+}
