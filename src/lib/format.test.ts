@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { formatDate, formatValue } from './format';
+import { formatDate, formatPercent, formatValue } from './format';
+
+describe('formatPercent', () => {
+  it('usa coma decimal y 2 decimales', () => {
+    expect(formatPercent(1.2345)).toBe('1,23%');
+    expect(formatPercent(0)).toBe('0,00%');
+  });
+});
 
 describe('formatValue', () => {
   it.each([

@@ -26,6 +26,11 @@ export function formatValue(
   return unit === 'USD_PER_LB' ? `US$ ${text} /lb` : `$${text}`;
 }
 
+/** Porcentaje con 2 decimales, p. ej. 1,23%. */
+export function formatPercent(percent: number): string {
+  return `${numberFormat(2).format(percent)}%`;
+}
+
 /** Convierte "YYYY-MM-DD" a "dd-mm-aaaa" separando el texto, sin pasar por Date. */
 export function formatDate(date: string): string {
   const [year, month, day] = date.split('-');
