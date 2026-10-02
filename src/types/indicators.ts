@@ -47,6 +47,10 @@ export interface IndicatorModuleConfig {
   id: IndicatorId;
   label: string;
   unit: 'CLP' | 'USD_PER_LB';
+  /** Decimales fijos al mostrar el valor */
+  decimals: number;
+  /** Cantidad de observaciones de la serie que se grafican */
+  chartPoints: number;
   freshness: FreshnessRule;
   /** Orden de la cadena de fuentes; la primera es la primaria */
   sources: SourceId[];
