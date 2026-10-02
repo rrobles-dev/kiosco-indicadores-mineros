@@ -1,6 +1,6 @@
 # SPEC v1: Kiosco de indicadores financieros y mineros
 
-> **Estado:** borrador para validación · **Versión del documento:** 0.9 · **Fecha:** 2026-10-02
+> **Estado:** borrador para validación · **Versión del documento:** 0.10 · **Fecha:** 2026-10-02
 > **Alcance de este documento:** solo la v1. La v2 y la v3 se describen como contexto en la sección 3.
 
 ---
@@ -174,7 +174,7 @@ Cada módulo de indicador muestra el valor actual, la fecha del dato, la variaci
 
 | Variante | Contenido |
 |---|---|
-| `large` | Etiqueta, valor, variación con la fecha del dato anterior, fecha del dato, fuente ("Fuente: mindicador.cl" o "Fuente: findic.cl" según `reading.source`) y gráfico con ejes: tres valores en el eje Y (mínimo, medio y máximo del dominio; el dominio es `centro ± span/2`, con `span = max(máx - mín de la serie, valorActual × minAxisSpanPct / 100)`, D-22), tres fechas en el eje X (inicio, mitad y fin, `dd-mm`), último punto destacado y rótulo del período ("Últimos N días hábiles"; "Últimos N meses" para la UTM) |
+| `large` | Etiqueta, valor, variación con la fecha del dato anterior, fecha del dato, fuente ("Fuente: mindicador.cl" o "Fuente: findic.cl" según `reading.source`) y gráfico con ejes: líneas de ejes y grilla horizontal en cada marca del eje Y, tres valores en el eje Y (mínimo, medio y máximo del dominio; el dominio es `centro ± span/2`, con `span = max(máx - mín de la serie, valorActual × minAxisSpanPct / 100)`, D-22), tres fechas en el eje X (inicio, mitad y fin, `dd-mm`, con una marca corta bajo cada una), último punto destacado y rótulo del período ("Últimos N días hábiles"; "Últimos N meses" para la UTM) |
 | `compact` | Etiqueta, valor, variación, fecha y el mismo gráfico con ejes que `large` (D-21) |
 | `minimal` | Etiqueta, valor y variación, en una línea |
 
@@ -539,7 +539,7 @@ done
 | D-18 | Franja fija de indicadores en recepción | Indicadores solo dentro de la rotación | Ningún valor desaparece mientras corre otro contenido |
 | D-19 | Barajado sin repetición | Aleatorio puro | Garantiza que todos aparezcan en cada vuelta y evita repeticiones seguidas |
 | D-20 | Unidades relativas a la pantalla | Píxeles fijos | La misma configuración escala a pantallas más grandes vistas desde más lejos |
-| D-21 | Ejes X e Y visibles en todo gráfico | Gráficos sin ejes en las variantes pequeñas | Un gráfico sin referencias puede contar una historia falsa aunque los datos sean correctos |
+| D-21 | Ejes X e Y visibles en todo gráfico, con líneas de ejes y grilla horizontal en cada marca del eje Y | Gráficos sin ejes en las variantes pequeñas | Un gráfico sin referencias puede contar una historia falsa aunque los datos sean correctos |
 | D-22 | Rango mínimo del eje Y (2 % del valor, configurable) | Escalar siempre al mínimo y máximo de la serie | Evita que variaciones mínimas, como la de la UF, parezcan movimientos fuertes, y evita la división por cero cuando todos los valores son iguales |
 
 ---
