@@ -1,6 +1,6 @@
 # SPEC v1: Kiosco de indicadores financieros y mineros
 
-> **Estado:** borrador para validación · **Versión del documento:** 0.10 · **Fecha:** 2026-10-02
+> **Estado:** borrador para validación · **Versión del documento:** 0.11 · **Fecha:** 2026-10-02
 > **Alcance de este documento:** solo la v1. La v2 y la v3 se describen como contexto en la sección 3.
 
 ---
@@ -43,8 +43,7 @@ La asociación quiere que esa pantalla cumpla dos funciones:
 
 - Módulos de indicadores: **UF, dólar observado, euro, UTM y libra de cobre**.
 - **Mini gráfico de 30 días** en los módulos cuya fuente entregue serie reciente.
-- **Reel de asociados** como un módulo más, con un video ficticio de ejemplo (Fase 5b).
-- **Reel de asociados y carrusel de logos** de socios (Fase 5b). Los reels largos se resuelven en el contenido, con videos más cortos; el código no segmenta videos.
+- **Reel de asociados y carrusel de logos** de socios. Los reels largos se resuelven en el contenido, con videos más cortos; el código no segmenta videos.
 - **Zonas con listas de reproducción y perfiles** (`recepcion` por defecto e `indicadores`), con rotación automática de escenas (sección 6.4).
 - **Fuente primaria con respaldo**: mindicador.cl como primaria y findic.cl como respaldo.
 - **Validación de vigencia** de cada dato según la frecuencia real del indicador.
@@ -197,8 +196,19 @@ Un dato está **vigente** si su fecha, convertida a `America/Santiago`, cumple l
 |---|---|
 | Contenido | Video ficticio de ejemplo en `public/media/reel-demo.mp4`, sin marcas ni personas reales |
 | Reproducción | Automática, **silenciada** e inline. Los navegadores bloquean la reproducción automática con sonido |
-| Duración en pantalla | La duración del video, con un máximo configurable (por defecto 90 s) |
-| Si el video falla al cargar | El módulo se salta en la rotación |
+| Duración en pantalla | La escena termina cuando acaba el video, con un tope de seguridad de 90 s (D-23) |
+| Si el video falla al cargar | La escena se salta de inmediato |
+
+### 5.4 Carrusel de logos de socios
+
+| Propiedad | Valor |
+|---|---|
+| Contenido | 12 logos SVG ficticios en `public/members/`, con nombres inventados y sin relación con empresas reales; la lista está en `src/config/members.ts` |
+| Páginas | De 6 logos, cada una durante 8 s |
+| Orden | Se baraja con Fisher-Yates en cada aparición del módulo, para que nadie quede siempre primero ni último (D-24) |
+| Tiempo por logo | El mismo para todos: cada página dura lo mismo |
+| Fin | La escena termina al acabar la última página (tope de seguridad de 30 s) |
+| Si un logo no carga | Se oculta, sin romper la página |
 
 ---
 
@@ -269,10 +279,10 @@ empty   → fresh | stale | empty
 
 La pantalla se divide en **zonas**. La zona principal reproduce una **lista de reproducción** de **escenas**; la zona secundaria no rota.
 
-- **Escena:** uno o dos módulos con un layout (`full` o `halves`) y una duración (15 s por defecto en los perfiles de la v1).
+- **Escena:** uno o dos módulos con un layout (`full` o `halves`). Termina **por tiempo** (`durationMs`, 15 s en las escenas de indicadores) o **por contenido**: sin `durationMs`, termina cuando el módulo llama a `onComplete` (fin del video del reel, última página de logos) y `maxDurationMs` es un tope de seguridad obligatorio (D-23). Gana lo que ocurra primero; un `onComplete` tardío de una escena anterior se ignora.
 - **Lista de reproducción:** `sequential` (en orden, y vuelve al inicio) o `shuffle`.
 - **Barajado sin repetición (D-19):** se baraja con Fisher-Yates en cada vuelta; todas las escenas aparecen una vez por vuelta y la primera de una vuelta nunca repite la última de la anterior.
-- **Se salta** una escena si todos sus módulos de indicador están en estado `empty`. Si ninguna escena es reproducible, la zona principal muestra "Indicadores no disponibles por el momento" y reintenta cada pocos segundos.
+- **Se salta** una escena si todos sus módulos de indicador están en estado `empty`; las escenas de reel y logos siempre son reproducibles. Si ninguna escena es reproducible, la zona principal muestra "Indicadores no disponibles por el momento" y reintenta cada pocos segundos.
 - **La zona secundaria** muestra los indicadores en variante `minimal` y oculta los que están `empty`.
 - **La reproducción es independiente del ciclo de datos:** una fuente lenta nunca congela la pantalla.
 
@@ -280,10 +290,10 @@ La pantalla se divide en **zonas**. La zona principal reproduce una **lista de r
 
 | Perfil | Layout | Zona principal | Zona secundaria |
 |---|---|---|---|
-| `recepcion` (por defecto) | `main-strip` | Secuencial, escenas de 15 s: cobre (`full`, `large`); dólar y euro (`halves`, `compact`); UF y UTM (`halves`, `compact`) | Franja con los cinco indicadores en `minimal` (D-18) |
+| `recepcion` (por defecto) | `main-strip` | Secuencial: cobre (`full`, `large`, 15 s) → dólar y euro (`halves`, `compact`, 15 s) → reel (por contenido, tope 90 s) → UF y UTM (`halves`, `compact`, 15 s) → logos (por contenido) | Franja con los cinco indicadores en `minimal`, fija durante todas las escenas, incluidos el reel y los logos (D-18) |
 | `indicadores` | `featured-sidebar` | `shuffle`, una escena `full` `large` por indicador | Barra lateral con los demás indicadores en `minimal` (omite el destacado) |
 
-Pendiente para la Fase 5b: el reel, el carrusel de logos y la barra con fecha y hora.
+Pendiente: la barra con fecha y hora.
 
 ---
 
@@ -541,6 +551,8 @@ done
 | D-20 | Unidades relativas a la pantalla | Píxeles fijos | La misma configuración escala a pantallas más grandes vistas desde más lejos |
 | D-21 | Ejes X e Y visibles en todo gráfico, con líneas de ejes y grilla horizontal en cada marca del eje Y | Gráficos sin ejes en las variantes pequeñas | Un gráfico sin referencias puede contar una historia falsa aunque los datos sean correctos |
 | D-22 | Rango mínimo del eje Y (2 % del valor, configurable) | Escalar siempre al mínimo y máximo de la serie | Evita que variaciones mínimas, como la de la UF, parezcan movimientos fuertes, y evita la división por cero cuando todos los valores son iguales |
+| D-23 | Escenas que terminan por contenido con tope de seguridad | Duración fija para todas las escenas | El reel debe durar lo que dura el video; el tope evita que un video defectuoso congele la rotación |
+| D-24 | Carrusel con orden barajado y tiempo igual por logo | Orden fijo | Socios con la misma cuota esperan la misma exposición |
 
 ---
 
