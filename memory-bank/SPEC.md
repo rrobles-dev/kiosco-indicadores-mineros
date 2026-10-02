@@ -116,6 +116,7 @@ Observaciones que afectan el diseño:
 - **`fecha` viene en UTC.** `T03:00:00.000Z` corresponde a la medianoche en Chile en horario de verano (UTC-3). En invierno Chile usa UTC-4, así que **nunca se suma o resta un desfase fijo**: se convierte con la zona horaria `America/Santiago`.
 - **El resumen no trae serie histórica.** La serie de 30 días se obtiene de findic.
 - **Existen indicadores desactualizados en la misma respuesta.** El IPC venía con fecha de diciembre de 2025 y el bitcoin con fecha de septiembre. Esto confirma que validar la vigencia es obligatorio.
+- **Un indicador con `fecha` inválida se omite**, igual que uno con `valor` que no es número finito; los demás indicadores se procesan normalmente.
 
 ### 4.3 findic.cl: endpoint por indicador
 
@@ -412,6 +413,7 @@ src/
 | CA-13 | Un ciclo de datos está en curso | La rotación sigue | La pantalla no se congela ni se vacía |
 | CA-14 | Hay serie de 30 días | Se dibuja el módulo | Se muestran el mini gráfico y la variación respecto del dato anterior |
 | CA-15 | Un valor recibido no es un número finito | El adaptador procesa la respuesta | Se trata como falla de esa fuente |
+| CA-16 | La fuente entrega una `fecha` que no es fecha válida | El adaptador procesa la respuesta | El indicador se omite y los demás se procesan normalmente |
 
 ### Estrategia de pruebas
 
