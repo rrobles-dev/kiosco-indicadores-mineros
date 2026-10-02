@@ -11,6 +11,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.useRealTimers();
+  vi.restoreAllMocks();
 });
 
 const names = () => screen.getAllByRole('img').map((img) => img.getAttribute('alt'));
@@ -97,11 +98,25 @@ describe('Logos', () => {
   });
 
   it('si un logo no carga, se oculta sin romper la página', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
     render(<Logos members={MEMBERS} random={lcg(2)} onComplete={vi.fn()} />);
     const images = screen.getAllByRole('img');
     fireEvent.error(images[0]);
     expect(screen.getAllByRole('img')).toHaveLength(5);
     expect(screen.queryByAltText(images[0].getAttribute('alt')!)).toBeNull();
+  });
+
+  it('si un logo no carga, registra console.warn con su id y su ruta', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    render(<Logos members={MEMBERS} random={lcg(2)} onComplete={vi.fn()} />);
+    const image = screen.getAllByRole('img')[0];
+    const member = MEMBERS.find((m) => m.name === image.getAttribute('alt'))!;
+
+    fireEvent.error(image);
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0].join(' ')).toContain(member.id);
+    expect(warn.mock.calls[0].join(' ')).toContain(member.logo);
   });
 
   it('sin socios, completa de inmediato', () => {

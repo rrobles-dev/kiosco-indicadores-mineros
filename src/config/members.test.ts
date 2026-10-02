@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { MEMBERS } from './members';
 
-const files = Object.keys(import.meta.glob('/public/members/*.svg'));
+const svgs = import.meta.glob<string>('/public/members/*.svg', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+});
+
+const SVG_START = /^<svg\b[^>]*\sxmlns="http:\/\/www\.w3\.org\/2000\/svg"/;
 
 describe('MEMBERS', () => {
   it('hay 12 socios con id y nombre únicos', () => {
@@ -10,9 +16,11 @@ describe('MEMBERS', () => {
     expect(new Set(MEMBERS.map((m) => m.name)).size).toBe(12);
   });
 
-  it('cada logo existe en public/', () => {
+  it('cada logo existe en public/ y empieza con <svg que declara el xmlns de SVG', () => {
     for (const member of MEMBERS) {
-      expect(files, member.logo).toContain(`/public${member.logo}`);
+      const content = svgs[`/public${member.logo}`];
+      expect(content, member.logo).toBeDefined();
+      expect(content, member.logo).toMatch(SVG_START);
     }
   });
 });

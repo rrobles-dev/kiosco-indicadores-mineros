@@ -49,7 +49,10 @@ export function Logos({ members, random, onComplete, pageSize = 6, pageMs = 8000
               className={styles.logo}
               src={member.logo}
               alt={member.name}
-              onError={() => setFailed((prev) => new Set(prev).add(member.id))}
+              onError={() => {
+                console.warn(`Logo no cargó: ${member.id} (${member.logo})`);
+                setFailed((prev) => new Set(prev).add(member.id));
+              }}
             />
           </li>
         ),
