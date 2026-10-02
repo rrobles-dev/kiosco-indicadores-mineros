@@ -29,6 +29,13 @@ describe('parseMindicadorSummary', () => {
     }
   });
 
+  it('convierte la fecha con la zona America/Santiago, no truncando el ISO', () => {
+    const raw = clone();
+    raw.uf = { ...fixture.uf, fecha: '2026-10-02T02:30:00.000Z' };
+    const result = parseMindicadorSummary(raw, FETCHED_AT);
+    expect(result.uf?.current.date).toBe('2026-10-01');
+  });
+
   it('omite un indicador ausente sin romper los demás', () => {
     const raw = clone();
     delete raw.euro;
