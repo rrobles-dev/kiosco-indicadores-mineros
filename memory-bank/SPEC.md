@@ -1,6 +1,6 @@
 # SPEC v1: Kiosco de indicadores financieros y mineros
 
-> **Estado:** borrador para validación · **Versión del documento:** 0.4 · **Fecha:** 2026-10-02
+> **Estado:** borrador para validación · **Versión del documento:** 0.5 · **Fecha:** 2026-10-02
 > **Alcance de este documento:** solo la v1. La v2 y la v3 se describen como contexto en la sección 3.
 
 ---
@@ -142,7 +142,7 @@ Respuesta observada el 2026-10-02 para `libra_cobre` (extracto):
 Observaciones que afectan el diseño:
 
 - **La fecha viene como `YYYY-MM-DD`, sin hora.** Es un formato distinto al de mindicador: cada adaptador normaliza a un formato común (sección 7).
-- **La serie viene ordenada de la más reciente a la más antigua.** El adaptador la invierte para graficarla de izquierda a derecha.
+- **La serie viene ordenada de la más reciente a la más antigua.** El adaptador ordena la serie por fecha y no depende del orden de llegada: si la fuente cambia el orden, `current` dejaría de ser el dato más reciente sin ningún error visible.
 - **La serie salta los días sin mercado.** Entre el 17-09 y el 21-09 no hay datos por Fiestas Patrias. Este hueco de cuatro días justifica la regla de vigencia de la sección 5.2.
 - **Los cinco endpoints tienen la misma forma** (verificado en la Fase 0).
 - **La serie de `utm` es mensual:** una observación por mes, fechada el día 1 (`2026-10-01`, `2026-09-01`…). Permite un mini gráfico de 12 meses.
@@ -217,6 +217,8 @@ Fuente de respaldo (findic)
 
 Caché local (último valor conocido)
   └─ se muestra como "desactualizado"
+     (D-12: se elige la lectura de fecha más reciente entre la caché y los datos
+     no vigentes obtenidos de las fuentes)
 
 Sin caché
   └─ el módulo queda "sin datos" y se salta en la rotación
@@ -497,6 +499,7 @@ done
 | D-09 | Mini gráfico de 12 meses para la UTM | UTM sin gráfico | La Fase 0 mostró que findic entrega serie mensual; el costo es mínimo |
 | D-10 | Etiquetas desde la configuración | Usar el campo `nombre` de cada API | Las fuentes nombran distinto el mismo indicador; la pantalla debe ser consistente al cambiar de fuente |
 | D-11 | React 19 en vez de 18 | React 18 | Es la versión del template actual; no hay diferencias relevantes para esta app |
+| D-12 | En stale se muestra la observación más reciente entre fuentes no vigentes y caché | Mostrar siempre la caché | Lo que se muestra como desactualizado debe ser lo menos desactualizado posible |
 
 ---
 
