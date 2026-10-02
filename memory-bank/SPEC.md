@@ -1,18 +1,20 @@
 # SPEC v1: Kiosco de indicadores financieros y mineros
 
-> **Estado:** borrador para validación · **Versión del documento:** 0.11 · **Fecha:** 2026-10-02
+> **Estado:** borrador para validación · **Versión del documento:** 0.12 · **Fecha:** 2026-10-02
 > **Alcance de este documento:** solo la v1. La v2 y la v3 se describen como contexto en la sección 3.
 
 ---
 
 ## 1. Problema de negocio
 
-Una asociación gremial de proveedores de la minería (ficticia en este proyecto) recibe a socios, visitas y asistentes a eventos en su sede. Mientras esperan en recepción, o antes de que comience un evento, estas personas tienen frente a sí una pantalla que hoy no comunica nada.
+El kiosco es un **producto configurable** para cualquier organización que quiera mostrar indicadores y contenido propio en una pantalla de recepción o de eventos. Los indicadores, los perfiles, el video y los logos se definen en la configuración; el contenido de ejemplo incluido usa nombres genéricos (D-25).
+
+**Caso de uso de ejemplo que guió el diseño:** una asociación gremial de proveedores de la minería (ficticia en este proyecto) recibe a socios, visitas y asistentes a eventos en su sede. Mientras esperan en recepción, o antes de que comience un evento, estas personas tienen frente a sí una pantalla que hoy no comunica nada.
 
 La asociación quiere que esa pantalla cumpla dos funciones:
 
 1. **Informar:** mostrar los indicadores que su audiencia consulta a diario para tomar decisiones comerciales, como el precio del cobre, el dólar y la UF.
-2. **Dar visibilidad a los socios:** mostrar un reel con las empresas asociadas, que se produce por separado.
+2. **Dar visibilidad a los socios:** mostrar un video con las empresas asociadas, que se produce por separado, y sus logos.
 
 **Restricción clave:** nadie opera la pantalla. Tiene que funcionar sola durante toda la jornada, tolerar caídas de internet o de las fuentes de datos y nunca mostrar una pantalla de error o un dato desactualizado como si fuera actual.
 
@@ -43,7 +45,7 @@ La asociación quiere que esa pantalla cumpla dos funciones:
 
 - Módulos de indicadores: **UF, dólar observado, euro, UTM y libra de cobre**.
 - **Mini gráfico de 30 días** en los módulos cuya fuente entregue serie reciente.
-- **Reel de asociados y carrusel de logos** de socios. Los reels largos se resuelven en el contenido, con videos más cortos; el código no segmenta videos.
+- **Módulo de video y carrusel de logos.** El video puede ser un reel corporativo, publicidad, anuncios o un video institucional; los logos pueden ser de socios, patrocinadores, clientes o marcas. Los videos largos se resuelven en el contenido, con videos más cortos; el código no segmenta videos.
 - **Zonas con listas de reproducción y perfiles** (`recepcion` por defecto e `indicadores`), con rotación automática de escenas (sección 6.4).
 - **Fuente primaria con respaldo**: mindicador.cl como primaria y findic.cl como respaldo.
 - **Validación de vigencia** de cada dato según la frecuencia real del indicador.
@@ -190,20 +192,24 @@ Un dato está **vigente** si su fecha, convertida a `America/Santiago`, cumple l
 
 > Los umbrales son valores iniciales razonados y se ajustarán con datos reales. Si en producción aparecen falsos "desactualizados" (por ejemplo, después de feriados consecutivos), se revisa la regla y se registra en la sección 13.
 
-### 5.3 Módulo de reel
+### 5.3 Módulo de video
+
+Reproduce un video de la organización: reel corporativo, publicidad, anuncios o video institucional.
 
 | Propiedad | Valor |
 |---|---|
-| Contenido | Video ficticio de ejemplo en `public/media/reel-demo.mp4`, sin marcas ni personas reales |
+| Contenido | Placeholder genérico en `public/media/video-demo.mp4` (24 s, 720p) con el texto "Espacio para video", sin marcas ni personas reales |
 | Reproducción | Automática, **silenciada** e inline. Los navegadores bloquean la reproducción automática con sonido |
 | Duración en pantalla | La escena termina cuando acaba el video, con un tope de seguridad de 90 s (D-23) |
 | Si el video falla al cargar | La escena se salta de inmediato |
 
-### 5.4 Carrusel de logos de socios
+### 5.4 Carrusel de logos
+
+Muestra logos de socios, patrocinadores, clientes o marcas.
 
 | Propiedad | Valor |
 |---|---|
-| Contenido | 12 logos SVG ficticios en `public/members/`, con nombres inventados y sin relación con empresas reales; la lista está en `src/config/members.ts` |
+| Contenido | 12 logos SVG genéricos de ejemplo en `public/members/` ("Logo 1" a "Logo 12", con nombres "Empresa de ejemplo 1" a "Empresa de ejemplo 12"); la lista está en `src/config/members.ts` |
 | Páginas | De 6 logos, cada una durante 8 s |
 | Orden | Se baraja con Fisher-Yates en cada aparición del módulo, para que nadie quede siempre primero ni último (D-24) |
 | Tiempo por logo | El mismo para todos: cada página dura lo mismo |
@@ -279,10 +285,10 @@ empty   → fresh | stale | empty
 
 La pantalla se divide en **zonas**. La zona principal reproduce una **lista de reproducción** de **escenas**; la zona secundaria no rota.
 
-- **Escena:** uno o dos módulos con un layout (`full` o `halves`). Termina **por tiempo** (`durationMs`, 15 s en las escenas de indicadores) o **por contenido**: sin `durationMs`, termina cuando el módulo llama a `onComplete` (fin del video del reel, última página de logos) y `maxDurationMs` es un tope de seguridad obligatorio (D-23). Gana lo que ocurra primero; un `onComplete` tardío de una escena anterior se ignora.
+- **Escena:** uno o dos módulos con un layout (`full` o `halves`). Termina **por tiempo** (`durationMs`, 15 s en las escenas de indicadores) o **por contenido**: sin `durationMs`, termina cuando el módulo llama a `onComplete` (fin del video, última página de logos) y `maxDurationMs` es un tope de seguridad obligatorio (D-23). Gana lo que ocurra primero; un `onComplete` tardío de una escena anterior se ignora.
 - **Lista de reproducción:** `sequential` (en orden, y vuelve al inicio) o `shuffle`.
 - **Barajado sin repetición (D-19):** se baraja con Fisher-Yates en cada vuelta; todas las escenas aparecen una vez por vuelta y la primera de una vuelta nunca repite la última de la anterior.
-- **Se salta** una escena si todos sus módulos de indicador están en estado `empty`; las escenas de reel y logos siempre son reproducibles. Si ninguna escena es reproducible, la zona principal muestra "Indicadores no disponibles por el momento" y reintenta cada pocos segundos.
+- **Se salta** una escena si todos sus módulos de indicador están en estado `empty`; las escenas de video y logos siempre son reproducibles. Si ninguna escena es reproducible, la zona principal muestra "Indicadores no disponibles por el momento" y reintenta cada pocos segundos.
 - **La zona secundaria** muestra los indicadores en variante `minimal` y oculta los que están `empty`.
 - **La reproducción es independiente del ciclo de datos:** una fuente lenta nunca congela la pantalla.
 
@@ -290,7 +296,7 @@ La pantalla se divide en **zonas**. La zona principal reproduce una **lista de r
 
 | Perfil | Layout | Zona principal | Zona secundaria |
 |---|---|---|---|
-| `recepcion` (por defecto) | `main-strip` | Secuencial: cobre (`full`, `large`, 15 s) → dólar y euro (`halves`, `compact`, 15 s) → reel (por contenido, tope 90 s) → UF y UTM (`halves`, `compact`, 15 s) → logos (por contenido) | Franja con los cinco indicadores en `minimal`, fija durante todas las escenas, incluidos el reel y los logos (D-18) |
+| `recepcion` (por defecto) | `main-strip` | Secuencial: cobre (`full`, `large`, 15 s) → dólar y euro (`halves`, `compact`, 15 s) → video (por contenido, tope 90 s) → UF y UTM (`halves`, `compact`, 15 s) → logos (por contenido) | Franja con los cinco indicadores en `minimal`, fija durante todas las escenas, incluidos el video y los logos (D-18) |
 | `indicadores` | `featured-sidebar` | `shuffle`, una escena `full` `large` por indicador | Barra lateral con los demás indicadores en `minimal` (omite el destacado) |
 
 Pendiente: la barra con fecha y hora.
@@ -401,7 +407,8 @@ src/
 ├── app/                  # Composición: App, barra superior, carrusel
 ├── modules/
 │   ├── indicator/        # Componente de módulo de indicador y mini gráfico
-│   └── reel/             # Componente del reel
+│   ├── video/            # Módulo de video
+│   └── logos/            # Carrusel de logos
 ├── data/
 │   ├── adapters/         # mindicador.ts, findic.ts (normalizan a IndicatorReading)
 │   ├── chain.ts          # Recorre la cadena de fuentes con reintentos
@@ -453,8 +460,8 @@ src/
 | CA-08 | La fuente entrega `"fecha": "2026-10-02T03:00:00.000Z"` | Se normaliza la fecha | Se guarda `2026-10-02` (fecha en `America/Santiago`) |
 | CA-09 | Una petición tarda más de 8 s | Se cumple el timeout | Se cancela y cuenta como intento fallido |
 | CA-10 | La aplicación está rotando | Pasan 15 s en un módulo de indicador | Avanza al siguiente módulo no `empty` |
-| CA-11 | El reel está en pantalla | Termina el video | Avanza al siguiente módulo |
-| CA-12 | El video del reel no carga | Le toca su turno en la rotación | Se salta |
+| CA-11 | El módulo de video está en pantalla | Termina el video | Avanza al siguiente módulo |
+| CA-12 | El video no carga | Le toca su turno en la rotación | Se salta |
 | CA-13 | Un ciclo de datos está en curso | La rotación sigue | La pantalla no se congela ni se vacía |
 | CA-14 | Hay serie de 30 días | Se dibuja el módulo | Se muestran el mini gráfico y la variación respecto del dato anterior |
 | CA-15 | Un valor recibido no es un número finito | El adaptador procesa la respuesta | Se trata como falla de esa fuente |
@@ -553,6 +560,7 @@ done
 | D-22 | Rango mínimo del eje Y (2 % del valor, configurable) | Escalar siempre al mínimo y máximo de la serie | Evita que variaciones mínimas, como la de la UF, parezcan movimientos fuertes, y evita la división por cero cuando todos los valores son iguales |
 | D-23 | Escenas que terminan por contenido con tope de seguridad | Duración fija para todas las escenas | El reel debe durar lo que dura el video; el tope evita que un video defectuoso congele la rotación |
 | D-24 | Carrusel con orden barajado y tiempo igual por logo | Orden fijo | Socios con la misma cuota esperan la misma exposición |
+| D-25 | Contenido de ejemplo genérico y módulos configurables | Contenido de ejemplo con nombres del caso de uso | El kiosco sirve a cualquier organización y se evita cualquier coincidencia con empresas reales |
 
 ---
 
