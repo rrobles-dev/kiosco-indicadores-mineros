@@ -23,7 +23,7 @@ function App() {
   return (
     <main className="grid">
       {INDICATOR_MODULES.map((config) => (
-        <IndicatorModule key={config.id} config={config} state={states[config.id]} />
+        <IndicatorModule key={config.id} config={config} state={states[config.id]} variant="compact" />
       ))}
     </main>
   )
