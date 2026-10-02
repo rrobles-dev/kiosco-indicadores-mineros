@@ -1,6 +1,6 @@
 # SPEC v1: Kiosco de indicadores financieros y mineros
 
-> **Estado:** borrador para validación · **Versión del documento:** 0.2 (Fase 0 completada) · **Fecha:** 2026-10-02
+> **Estado:** borrador para validación · **Versión del documento:** 0.3 · **Fecha:** 2026-10-02
 > **Alcance de este documento:** solo la v1. La v2 y la v3 se describen como contexto en la sección 3.
 
 ---
@@ -341,9 +341,9 @@ export interface FindicSeriesRaw {
 
 | Capa | Elección | Por qué |
 |---|---|---|
-| UI | React 18 + TypeScript (strict) | Stack principal del autor |
-| Build | Vite | Arranque rápido y build estático simple |
-| Pruebas | Vitest + React Testing Library | API compatible con Jest, integrada con Vite |
+| UI | React 19.2 + TypeScript 6.0 (strict) | Stack principal del autor |
+| Build | Vite 8.3 | Arranque rápido y build estático simple |
+| Pruebas | Vitest 5 + React Testing Library | API compatible con Jest, integrada con Vite |
 | Estilos | CSS Modules con variables CSS | Sin dependencias extra; suficiente para una pantalla fija |
 | Gráficos | SVG propio para el mini gráfico | Es una línea simple: una librería de gráficos no se justifica |
 | Despliegue | GitHub Pages o Netlify | Sitio estático, sin servidor |
@@ -492,6 +492,7 @@ done
 | D-08 | Mini gráfico en SVG propio | Librería de gráficos | Una línea simple no justifica una dependencia |
 | D-09 | Mini gráfico de 12 meses para la UTM | UTM sin gráfico | La Fase 0 mostró que findic entrega serie mensual; el costo es mínimo |
 | D-10 | Etiquetas desde la configuración | Usar el campo `nombre` de cada API | Las fuentes nombran distinto el mismo indicador; la pantalla debe ser consistente al cambiar de fuente |
+| D-11 | React 19 en vez de 18 | React 18 | Es la versión del template actual; no hay diferencias relevantes para esta app |
 
 ---
 
