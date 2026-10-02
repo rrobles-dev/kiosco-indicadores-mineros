@@ -1,6 +1,6 @@
 # SPEC v1: Kiosco de indicadores financieros y mineros
 
-> **Estado:** borrador para validación · **Versión del documento:** 0.6 · **Fecha:** 2026-10-02
+> **Estado:** borrador para validación · **Versión del documento:** 0.7 · **Fecha:** 2026-10-02
 > **Alcance de este documento:** solo la v1. La v2 y la v3 se describen como contexto en la sección 3.
 
 ---
@@ -229,7 +229,8 @@ Reglas:
 - **Timeout por intento:** 8 segundos, cancelando la petición con `AbortController`.
 - **Cuenta como falla:** error de red, timeout, código HTTP distinto de 2xx, JSON inválido o un valor que no es número finito.
 - **Un dato no vigente no es un error de red:** no se reintenta en la misma fuente; se pasa directo a la siguiente.
-- **Cada dato vigente obtenido actualiza la caché local** del indicador.
+- **Enriquecimiento de series (D-15):** tras recorrer las fuentes, las lecturas (`fresh` o `stale`) que no traen serie se completan con una única llamada a findic, sin reintentos y con el mismo timeout por intento. `source` no cambia: indica de dónde viene el valor actual. Si la llamada falla, la lectura queda sin serie y su estado no cambia: una serie ausente nunca degrada un dato vigente. Las lecturas que ya vienen de findic no se vuelven a pedir.
+- **La caché se escribe al final del ciclo**, con las lecturas vigentes ya enriquecidas, para que el estado inicial (D-14) muestre el gráfico desde el arranque.
 - **Mientras se recorre la cadena, el módulo sigue mostrando lo que tenía.** Nunca se vacía la pantalla para "cargar".
 
 ### 6.3 Estados de un módulo de indicador
@@ -508,6 +509,8 @@ done
 | D-12 | En stale se muestra la observación más reciente entre fuentes no vigentes y caché | Mostrar siempre la caché | Lo que se muestra como desactualizado debe ser lo menos desactualizado posible |
 | D-13 | Eliminar "cache" de SourceId | Marcar las lecturas de caché con source "cache" | source indica de dónde viene el dato; la caché es un almacenamiento, no una fuente |
 | D-14 | Estado inicial calculado desde la caché | Partir siempre en loading | Un dato guardado que sigue vigente no debe mostrarse como cargando ni como desactualizado; además cumple el requisito de primer módulo en < 3 s |
+| D-15 | La serie siempre se pide a findic, un solo intento | Usar la serie solo cuando el valor viene de findic | Valor y serie son responsabilidades distintas; la serie complementa y no justifica reintentos |
+| D-16 | Agrupación de miles siempre (`useGrouping: 'always'`) | Formato por defecto de es-CL | es-CL sigue la norma RAE de no agrupar cifras de 4 dígitos, pero la convención financiera chilena escribe $1.104,57 |
 
 ---
 
