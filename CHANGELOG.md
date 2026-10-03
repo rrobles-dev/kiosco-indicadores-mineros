@@ -6,6 +6,8 @@ El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/es-ES/1.1.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-03
+
 ### Agregado
 
 - Módulos de UF, dólar observado, euro, UTM y libra de cobre, con valores en formato chileno (`$41.073,57`, `US$ 6,56 /lb`) y fechas `dd-mm-aaaa`.
@@ -31,3 +33,6 @@ El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/es-ES/1.1.0
 - Contenido de ejemplo genérico: video "Espacio para video" y 12 logos "Empresa de ejemplo 1" a "Empresa de ejemplo 12".
 - Tamaños relativos a la pantalla, para escalar a pantallas de distinto tamaño.
 - Publicación automática en GitHub Pages en cada cambio a la rama principal, con las pruebas y el lint como requisito previo.
+
+[Unreleased]: https://github.com/rrobles-dev/kiosco-indicadores-mineros/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/rrobles-dev/kiosco-indicadores-mineros/releases/tag/v1.0.0
