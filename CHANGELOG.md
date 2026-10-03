@@ -15,7 +15,8 @@ El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/es-ES/1.1.0
 - Último valor conocido guardado en el navegador: si no hay dato vigente, el módulo lo muestra rotulado "Actualizado el dd-mm-aaaa" y con un estilo distinto, en vez de una pantalla de error.
 - Arranque inmediato con los datos guardados de la sesión anterior, sin esperar a la primera consulta.
 - Actualización automática de los datos cada 60 minutos, sin recargar la página y sin congelar la pantalla mientras se consulta.
-- Mini gráfico de los últimos 30 días hábiles (12 meses para la UTM), con ejes, grilla y el último punto destacado, junto a la variación respecto del dato anterior.
+- Mini gráfico de los últimos 30 días hábiles (12 meses para la UTM), con ejes siempre visibles, grilla y el último punto destacado, junto a la variación respecto del dato anterior. Se muestra desde el arranque y sea cual sea la fuente del valor actual.
+- Rango mínimo del eje Y, para que variaciones pequeñas como la de la UF no parezcan movimientos fuertes.
 - Tres presentaciones del módulo de indicador: destacada, compacta y en una línea.
 - Rotación de escenas por perfil (recepción e indicadores), seleccionable con `?perfil=` en la URL.
 - Perfil de recepción con franja fija de indicadores siempre visible mientras rotan las escenas.
@@ -23,18 +24,8 @@ El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/es-ES/1.1.0
 - Los indicadores sin datos se saltan en la rotación; si no queda ninguno disponible, la pantalla lo indica y vuelve a intentar.
 - Módulo de video (reel corporativo, publicidad, anuncios o video institucional) que se reproduce silenciado, avanza al terminar el video y se salta si no carga.
 - Carrusel de logos (socios, patrocinadores, clientes o marcas) en páginas de 6 logos, con orden barajado en cada aparición y el mismo tiempo en pantalla para todos.
+- Registro en la consola de los logos que no cargan, con su identificador y ruta.
 - Título accesible configurable para el carrusel de logos ("Logos" por defecto).
 - Escenas que terminan cuando termina su contenido, con un tope de seguridad para que un video defectuoso no detenga la rotación.
 - Contenido de ejemplo genérico: video "Espacio para video" y 12 logos "Empresa de ejemplo 1" a "Empresa de ejemplo 12".
-- Tamaños relativos a la pantalla, legibles a distancia y escalables a pantallas de eventos.
-
-### Cambiado
-
-- El kiosco es un producto configurable para cualquier organización; la asociación gremial minera queda como caso de uso de ejemplo.
-- El módulo de reel pasa a llamarse módulo de video, y el contenido de ejemplo usa nombres y logos genéricos.
-
-### Corregido
-
-- Los indicadores muestran su gráfico y variación también cuando el valor viene de la fuente principal, y conservan su gráfico desde el arranque.
-- Los gráficos siempre muestran sus ejes, y las variaciones mínimas (como la de la UF) ya no parecen movimientos fuertes.
-- Un logo que no carga queda registrado en la consola del navegador, con su identificador y su ruta, para poder diagnosticarlo.
+- Tamaños relativos a la pantalla, para escalar a pantallas de distinto tamaño.
