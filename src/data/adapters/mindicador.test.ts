@@ -55,6 +55,17 @@ describe('parseMindicadorSummary', () => {
     },
   );
 
+  it.each([null, 42, 'no-es-fecha', '2026-13-45T03:00:00.000Z'])(
+    'omite un indicador con fecha inválida y procesa los demás (%s)',
+    (fecha) => {
+      const raw = clone();
+      raw.euro = { ...fixture.euro, fecha };
+      const result = parseMindicadorSummary(raw, FETCHED_AT);
+      expect(result.euro).toBeUndefined();
+      expect(Object.keys(result).sort()).toEqual(['dolar', 'libra_cobre', 'uf', 'utm']);
+    },
+  );
+
   it.each([null, 'texto', 42, [1, 2]])('lanza error si raw no es objeto (%j)', (raw) => {
     expect(() => parseMindicadorSummary(raw, FETCHED_AT)).toThrow();
   });
