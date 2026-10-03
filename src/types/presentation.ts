@@ -32,4 +32,6 @@ export interface Profile {
   id: 'recepcion' | 'indicadores';
   layout: 'main-strip' | 'featured-sidebar';
   main: Playlist;
+  /** Nombre que se muestra en la barra de fecha y hora; opcional. */
+  organization?: string;
 }

@@ -1,10 +1,18 @@
 /* Tamaños en unidades relativas a la pantalla; el ajuste fino es posterior. */
 .root {
   box-sizing: border-box;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   width: 100vw;
   height: 100vh;
   padding: 2vh 2vw;
+  gap: 2vh;
+}
+
+.body {
+  display: grid;
+  flex: 1;
+  min-height: 0;
   gap: 2vh 2vw;
 }
 

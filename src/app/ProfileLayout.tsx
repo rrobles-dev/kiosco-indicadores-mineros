@@ -5,6 +5,7 @@ import type {
   IndicatorModuleState,
 } from '../types/indicators';
 import type { Profile, Scene } from '../types/presentation';
+import { Clock } from './Clock';
 import styles from './ProfileLayout.module.css';
 import { SceneView } from './SceneView';
 import { usePlaylist } from './usePlaylist';
@@ -35,24 +36,27 @@ export function ProfileLayout({ profile, configs, states, random = Math.random }
   );
 
   return (
-    <div className={`${styles.root} ${styles[profile.layout]}`} data-layout={profile.layout}>
-      <main className={styles.main}>
-        {scene ? (
-          <SceneView key={step} scene={scene} configs={configs} states={states} onComplete={onComplete} random={random} />
-        ) : (
-          <p className={styles.unavailable}>Indicadores no disponibles por el momento</p>
-        )}
-      </main>
-      <aside className={styles.secondary} aria-label="Indicadores">
-        {secondary.map((config) => (
-          <IndicatorModule
-            key={config.id}
-            config={config}
-            state={states[config.id]}
-            variant="minimal"
-          />
-        ))}
-      </aside>
+    <div className={styles.root} data-layout={profile.layout}>
+      <Clock organization={profile.organization} />
+      <div className={`${styles.body} ${styles[profile.layout]}`}>
+        <main className={styles.main}>
+          {scene ? (
+            <SceneView key={step} scene={scene} configs={configs} states={states} onComplete={onComplete} random={random} />
+          ) : (
+            <p className={styles.unavailable}>Indicadores no disponibles por el momento</p>
+          )}
+        </main>
+        <aside className={styles.secondary} aria-label="Indicadores">
+          {secondary.map((config) => (
+            <IndicatorModule
+              key={config.id}
+              config={config}
+              state={states[config.id]}
+              variant="minimal"
+            />
+          ))}
+        </aside>
+      </div>
     </div>
   );
 }

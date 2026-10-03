@@ -30,3 +30,30 @@ export function isCalendarDate(value: unknown): value is string {
     check.getUTCDate() === day
   );
 }
+
+const clockFormatter = new Intl.DateTimeFormat('es-CL', {
+  timeZone: 'America/Santiago',
+  weekday: 'long',
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+});
+
+/** Fecha y hora en America/Santiago, p. ej. "viernes 02-10-2026 · 17:45". */
+export function formatSantiagoClock(date: Date): string {
+  const parts = Object.fromEntries(
+    clockFormatter.formatToParts(date).map((p) => [p.type, p.value]),
+  );
+  return `${parts.weekday.toLowerCase()} ${parts.day}-${parts.month}-${parts.year} · ${parts.hour}:${parts.minute}`;
+}
+
+/**
+ * Milisegundos hasta el inicio del minuto siguiente. Chile tiene desfases de horas
+ * enteras, así que el cambio de minuto local coincide con el de UTC.
+ */
+export function msUntilNextMinute(date: Date): number {
+  return 60_000 - (date.getTime() % 60_000);
+}

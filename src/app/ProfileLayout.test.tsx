@@ -214,3 +214,16 @@ describe('ProfileLayout featured-sidebar (indicadores)', () => {
     expect(shown.size).toBe(5);
   });
 });
+
+describe('ProfileLayout barra de fecha y hora', () => {
+  it.each([recepcion, indicadores])('aparece en el perfil $id', (profile) => {
+    vi.setSystemTime(new Date('2026-10-02T20:45:00.000Z'));
+    renderProfile(profile);
+    expect(screen.getByRole('banner')).toHaveTextContent('viernes 02-10-2026 · 17:45');
+  });
+
+  it('muestra el nombre de la organización configurado en el perfil', () => {
+    renderProfile({ ...recepcion, organization: 'Organización de ejemplo' });
+    expect(within(screen.getByRole('banner')).getByText('Organización de ejemplo')).toBeInTheDocument();
+  });
+});
