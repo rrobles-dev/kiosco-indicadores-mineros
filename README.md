@@ -2,7 +2,11 @@
 
 Pantalla de recepción con indicadores financieros y mineros de Chile, pensada para funcionar sola todo el día.
 
-> **Estado:** en desarrollo (v1). La especificación completa está en [`memory-bank/SPEC.md`](memory-bank/SPEC.md).
+[![Despliegue en GitHub Pages](https://github.com/rrobles-dev/kiosco-indicadores-mineros/actions/workflows/deploy.yml/badge.svg)](https://github.com/rrobles-dev/kiosco-indicadores-mineros/actions/workflows/deploy.yml)
+
+**Demo:** [vista de recepción](https://rrobles-dev.github.io/kiosco-indicadores-mineros/) · [vista de indicadores](https://rrobles-dev.github.io/kiosco-indicadores-mineros/?perfil=indicadores)
+
+> **Estado:** v1.0.0. La especificación completa está en [`memory-bank/SPEC.md`](memory-bank/SPEC.md) y los cambios por versión en [`CHANGELOG.md`](CHANGELOG.md).
 
 ---
 
@@ -35,15 +39,44 @@ La restricción que define el diseño: **nadie opera la pantalla.** Tiene que fu
 
 ---
 
+## Capturas
+
+**Perfil de recepción**
+
+![Perfil de recepción: indicador destacado con su gráfico y franja inferior con los cinco indicadores](docs/img/recepcion.png)
+
+**Perfil de indicadores**
+
+![Perfil de indicadores: un indicador destacado y barra lateral con los demás](docs/img/indicadores.png)
+
+## Perfiles
+
+El perfil se elige con el parámetro `?perfil=` en la URL. Sin parámetro, o con un valor desconocido, se usa `recepcion`.
+
+| Perfil | URL | Qué muestra |
+|---|---|---|
+| `recepcion` (por defecto) | `/` o `/?perfil=recepcion` | Rotación en orden: cobre, dólar y euro, video, UF y UTM, y carrusel de logos. Una franja inferior muestra siempre los cinco indicadores |
+| `indicadores` | `/?perfil=indicadores` | Un indicador destacado por escena, en orden aleatorio sin repeticiones, y los demás en una barra lateral |
+
+Ambos perfiles muestran arriba la fecha y la hora de Chile.
+
 ## Indicadores de la v1
 
 UF · dólar observado · euro · UTM · libra de cobre, cada uno con mini gráfico de su serie reciente, más un módulo de video y un carrusel de logos con contenido genérico de ejemplo.
+
+## Limitaciones conocidas
+
+- **Tipografía no validada a distancia:** los tamaños son relativos a la pantalla, pero falta comprobarlos en una pantalla de 60" vista a 4–5 m.
+- **Estabilidad de 12 horas no medida:** el kiosco está pensado para funcionar toda la jornada sin recargar, pero aún no se ha medido una corrida completa.
+- **Sin transiciones entre escenas:** el cambio de escena es instantáneo.
+- **Diseño no adaptado a pantallas pequeñas:** está pensado para pantallas horizontales Full HD o mayores, no para celulares.
+- **Datos diarios:** los valores se actualizan una vez al día según publica cada fuente; el cobre y las divisas en vivo llegan en la v2.
 
 ## Hoja de ruta
 
 | Versión | Foco | Estado |
 |---|---|---|
-| **v1** | Kiosco solo frontend con datos diarios, fuente de respaldo y validación de vigencia | 🚧 En desarrollo |
+| **v1** | Kiosco solo frontend con datos diarios, fuente de respaldo y validación de vigencia | ✅ Completada (v1.0.0) |
 | **v2** | Backend: fuentes oficiales con credenciales (Banco Central, CMF), cobre en vivo, ETL de datos de Cochilco, clima y sismos en regiones mineras | Planificada |
 | **v3** | Base de datos y módulos históricos | Planificada |
 
