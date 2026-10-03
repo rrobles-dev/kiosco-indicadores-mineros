@@ -1,3 +1,4 @@
+import { assetUrl } from '../../lib/assets';
 import styles from './Video.module.css';
 
 interface VideoProps {
@@ -7,7 +8,7 @@ interface VideoProps {
 }
 
 // Silenciado: los navegadores bloquean la reproducción automática con audio.
-export function Video({ src = '/media/video-demo.mp4', onComplete }: VideoProps) {
+export function Video({ src = assetUrl('media/video-demo.mp4'), onComplete }: VideoProps) {
   return (
     <video
       className={styles.video}

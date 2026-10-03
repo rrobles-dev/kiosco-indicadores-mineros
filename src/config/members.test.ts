@@ -18,9 +18,11 @@ describe('MEMBERS', () => {
 
   it('cada logo existe en public/ y empieza con <svg que declara el xmlns de SVG', () => {
     for (const member of MEMBERS) {
-      const content = svgs[`/public${member.logo}`];
-      expect(content, member.logo).toBeDefined();
-      expect(content, member.logo).toMatch(SVG_START);
+      // El logo se publica bajo la base del build; en disco está en /public.
+      const file = `/public/${member.logo.slice(import.meta.env.BASE_URL.length)}`;
+      const content = svgs[file];
+      expect(content, file).toBeDefined();
+      expect(content, file).toMatch(SVG_START);
     }
   });
 });
