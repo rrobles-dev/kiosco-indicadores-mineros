@@ -1,6 +1,6 @@
 # SPEC v1: Kiosco de indicadores financieros y mineros
 
-> **Estado:** borrador para validación · **Versión del documento:** 0.13 · **Fecha:** 2026-10-02
+> **Estado:** borrador para validación · **Versión del documento:** 0.14 · **Fecha:** 2026-10-02
 > **Alcance de este documento:** solo la v1. La v2 y la v3 se describen como contexto en la sección 3.
 
 ---
@@ -300,7 +300,7 @@ La pantalla se divide en **zonas**. La zona principal reproduce una **lista de r
 | `recepcion` (por defecto) | `main-strip` | Secuencial: cobre (`full`, `large`, 15 s) → dólar y euro (`halves`, `compact`, 15 s) → video (por contenido, tope 90 s) → UF y UTM (`halves`, `compact`, 15 s) → logos (por contenido) | Franja con los cinco indicadores en `minimal`, fija durante todas las escenas, incluidos el video y los logos (D-18) |
 | `indicadores` | `featured-sidebar` | `shuffle`, una escena `full` `large` por indicador | Barra lateral con los demás indicadores en `minimal` (omite el destacado) |
 
-Pendiente: la barra con fecha y hora.
+**Barra de fecha y hora.** Aparece en ambos perfiles, sobre las zonas. Muestra la fecha y la hora en `America/Santiago` ("viernes 02-10-2026 · 17:45": día de la semana en minúsculas, fecha `dd-mm-aaaa` y hora `HH:mm`) y se actualiza al inicio de cada minuto. El perfil puede definir un nombre de organización opcional (`organization`); si no lo define, no se muestra nada en su lugar.
 
 ---
 
@@ -399,7 +399,7 @@ export interface FindicSeriesRaw {
 | Pruebas | Vitest 5 + React Testing Library | API compatible con Jest, integrada con Vite |
 | Estilos | CSS Modules con variables CSS | Sin dependencias extra; suficiente para una pantalla fija |
 | Gráficos | SVG propio para el mini gráfico | Es una línea simple: una librería de gráficos no se justifica |
-| Despliegue | GitHub Pages o Netlify | Sitio estático, sin servidor |
+| Despliegue | GitHub Pages con GitHub Actions (D-26) | Sitio estático, sin servidor. Cada push a `main` corre las pruebas (`test:run` y `test:tz`) y el lint, y solo si pasan publica el build. El sitio vive en la subruta `/kiosco-indicadores-mineros/`, por lo que las rutas de assets se construyen con `BASE_URL` (D-27) |
 
 ### 8.2 Estructura de carpetas propuesta
 
@@ -562,6 +562,8 @@ done
 | D-23 | Escenas que terminan por contenido con tope de seguridad | Duración fija para todas las escenas | El reel debe durar lo que dura el video; el tope evita que un video defectuoso congele la rotación |
 | D-24 | Carrusel con orden barajado y tiempo igual por logo | Orden fijo | Socios con la misma cuota esperan la misma exposición |
 | D-25 | Contenido de ejemplo genérico y módulos configurables | Contenido de ejemplo con nombres del caso de uso | El kiosco sirve a cualquier organización y se evita cualquier coincidencia con empresas reales |
+| D-26 | GitHub Pages con GitHub Actions | Netlify | Todo el proyecto queda en GitHub y el pipeline corre las pruebas antes de cada despliegue |
+| D-27 | Rutas de assets construidas con BASE_URL | Rutas absolutas desde la raíz | En una subruta, las rutas absolutas apuntan fuera del sitio y fallan sin error visible |
 
 ---
 

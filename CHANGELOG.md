@@ -18,6 +18,7 @@ El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/es-ES/1.1.0
 - Mini gráfico de los últimos 30 días hábiles (12 meses para la UTM), con ejes siempre visibles, grilla y el último punto destacado, junto a la variación respecto del dato anterior. Se muestra desde el arranque y sea cual sea la fuente del valor actual.
 - Rango mínimo del eje Y, para que variaciones pequeñas como la de la UF no parezcan movimientos fuertes.
 - Tres presentaciones del módulo de indicador: destacada, compacta y en una línea.
+- Barra de fecha y hora en America/Santiago ("viernes 02-10-2026 · 17:45"), actualizada al cambiar el minuto, con nombre de la organización opcional.
 - Rotación de escenas por perfil (recepción e indicadores), seleccionable con `?perfil=` en la URL.
 - Perfil de recepción con franja fija de indicadores siempre visible mientras rotan las escenas.
 - Perfil de indicadores con un indicador destacado por escena, en orden aleatorio sin repeticiones, y los demás en una barra lateral.
@@ -29,3 +30,4 @@ El formato sigue [Keep a Changelog 1.1.0](https://keepachangelog.com/es-ES/1.1.0
 - Escenas que terminan cuando termina su contenido, con un tope de seguridad para que un video defectuoso no detenga la rotación.
 - Contenido de ejemplo genérico: video "Espacio para video" y 12 logos "Empresa de ejemplo 1" a "Empresa de ejemplo 12".
 - Tamaños relativos a la pantalla, para escalar a pantallas de distinto tamaño.
+- Publicación automática en GitHub Pages en cada cambio a la rama principal, con las pruebas y el lint como requisito previo.
