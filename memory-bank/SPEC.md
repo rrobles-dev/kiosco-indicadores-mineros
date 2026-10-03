@@ -1,6 +1,6 @@
 # SPEC v1: Kiosco de indicadores financieros y mineros
 
-> **Estado:** borrador para validación · **Versión del documento:** 0.14 · **Fecha:** 2026-10-02
+> **Estado:** borrador para validación · **Versión del documento:** 0.15 · **Fecha:** 2026-10-02
 > **Alcance de este documento:** solo la v1. La v2 y la v3 se describen como contexto en la sección 3.
 
 ---
@@ -435,38 +435,39 @@ src/
 
 ## 9. Requisitos no funcionales
 
-| Requisito | Criterio |
-|---|---|
-| Legibilidad | El valor principal se lee a 4–5 m en una pantalla de 60 pulgadas. Los tamaños se definen en unidades relativas a la pantalla (`vh`, `vw`, `clamp`) para que escalen a pantallas más grandes vistas desde más lejos (D-20). El ajuste tipográfico fino queda como trabajo posterior, validado frente a una pantalla real a distancia |
-| Contraste | Texto con contraste AA o superior; el estado `stale` no depende solo del color (incluye texto) |
-| Estabilidad | 12 horas de funcionamiento sin recargar y sin crecimiento sostenido de memoria |
-| Resiliencia | Sin internet, la pantalla sigue rotando con lo que tenga en caché |
-| Rendimiento | El primer módulo visible en menos de 3 segundos con red normal (usando caché si existe) |
-| Movimiento | Transiciones suaves; se respeta `prefers-reduced-motion` |
-| Idioma y formato | Español de Chile: separador de miles `.`, decimal `,`, fechas dd-mm-aaaa |
-
+| Requisito | Criterio | Estado |
+|---|---|---|
+| Legibilidad | El valor principal se lee a 4–5 m en una pantalla de 60 pulgadas. Los tamaños se definen en unidades relativas a la pantalla (`vh`, `vw`, `clamp`) para que escalen a pantallas más grandes vistas desde más lejos (D-20). El ajuste tipográfico fino queda como trabajo posterior, validado frente a una pantalla real a distancia | **Pendiente de validación.** Requiere ver la pantalla de 60" a 4–5 m con los perfiles `recepcion` e `indicadores` |
+| Contraste | Texto con contraste AA o superior; el estado `stale` no depende solo del color (incluye texto) | **Cumplido.** Razones WCAG 2.x calculadas sobre los colores de texto del CSS y sus fondos (`#fff`, `#fffaeb`, `#f2f4f7`): la menor es 5,16:1 (variación al alza sobre el fondo de la página), sobre el mínimo AA de 4,5:1. El texto del estado `stale` lo cubre `IndicatorModule.test.tsx` › "stale: muestra "Actualizado el dd-mm-aaaa" y una clase distinta" |
+| Estabilidad | 12 horas de funcionamiento sin recargar y sin crecimiento sostenido de memoria | **Pendiente de validación.** Requiere una corrida de 12 h en el navegador del kiosco, comparando instantáneas de memoria al inicio y al final |
+| Resiliencia | Sin internet, la pantalla sigue rotando con lo que tenga en caché | **Cumplido.** `integration.test.tsx` › "sin red, el ciclo termina en stale con la caché y la rotación continúa" |
+| Rendimiento | El primer módulo visible en menos de 3 segundos con red normal (usando caché si existe) | **Pendiente de validación.** Con caché, el primer render ya muestra los datos (D-14, `useIndicators.test.ts` › "estado inicial: caché vigente -> fresh, no vigente -> stale, sin caché -> loading"); falta medir el arranque sin caché con red normal |
+| Movimiento | Transiciones suaves; se respeta `prefers-reduced-motion` | **Pendiente de validación.** Las escenas cambian sin transición; las transiciones suaves y su desactivación con `prefers-reduced-motion` aún no están implementadas |
+| Idioma y formato | Español de Chile: separador de miles `.`, decimal `,`, fechas dd-mm-aaaa | **Cumplido.** `format.test.ts` (formatValue, formatPercent, formatDate) y `dates.test.ts` › "día de la semana en minúsculas, fecha dd-mm-aaaa y hora HH:mm" |
 ---
 
 ## 10. Criterios de aceptación
 
-| ID | Dado | Cuando | Entonces |
-|---|---|---|---|
-| CA-01 | mindicador responde con datos vigentes | Se ejecuta el ciclo | Los cinco módulos quedan `fresh` con fuente `mindicador` |
-| CA-02 | mindicador no responde | Se agotan sus 4 intentos | Se consulta findic y, si su dato es vigente, el módulo queda `fresh` con fuente `findic` |
-| CA-03 | mindicador responde, pero la UF trae fecha de ayer | Se valida la vigencia | No se reintenta mindicador para la UF y se consulta findic directamente |
-| CA-04 | Ambas fuentes fallan y existe caché | Termina el ciclo | El módulo queda `stale` y muestra "Actualizado el dd-mm-aaaa" |
-| CA-05 | Ambas fuentes fallan y no existe caché | Termina el ciclo | El módulo queda `empty` y no aparece en la rotación |
-| CA-06 | Es lunes y el último dólar disponible es del viernes | Se valida la vigencia | El dólar se considera vigente (3 días ≤ 4) |
-| CA-07 | Es 1 de octubre y la UTM disponible es de septiembre | Se valida la vigencia | La UTM se considera desactualizada |
-| CA-08 | La fuente entrega `"fecha": "2026-10-02T03:00:00.000Z"` | Se normaliza la fecha | Se guarda `2026-10-02` (fecha en `America/Santiago`) |
-| CA-09 | Una petición tarda más de 8 s | Se cumple el timeout | Se cancela y cuenta como intento fallido |
-| CA-10 | La aplicación está rotando | Pasan 15 s en un módulo de indicador | Avanza al siguiente módulo no `empty` |
-| CA-11 | El módulo de video está en pantalla | Termina el video | Avanza al siguiente módulo |
-| CA-12 | El video no carga | Le toca su turno en la rotación | Se salta |
-| CA-13 | Un ciclo de datos está en curso | La rotación sigue | La pantalla no se congela ni se vacía |
-| CA-14 | Hay serie de 30 días | Se dibuja el módulo | Se muestran el mini gráfico y la variación respecto del dato anterior |
-| CA-15 | Un valor recibido no es un número finito | El adaptador procesa la respuesta | Se trata como falla de esa fuente |
-| CA-16 | La fuente entrega una `fecha` que no es fecha válida | El adaptador procesa la respuesta | El indicador se omite y los demás se procesan normalmente |
+Columna "Cubierto por": archivo de prueba › nombre de la prueba (rutas relativas a `src/`).
+
+| ID | Dado | Cuando | Entonces | Cubierto por |
+|---|---|---|---|---|
+| CA-01 | mindicador responde con datos vigentes | Se ejecuta el ciclo | Los cinco módulos quedan `fresh` con fuente `mindicador` | `data/chain.test.ts` › "CA-01: mindicador vigente para los cinco -> todos fresh con source mindicador" |
+| CA-02 | mindicador no responde | Se agotan sus 4 intentos | Se consulta findic y, si su dato es vigente, el módulo queda `fresh` con fuente `findic` | `data/chain.test.ts` › "CA-02: mindicador falla 4 veces con esperas 2s, 4s y 8s y luego usa findic" |
+| CA-03 | mindicador responde, pero la UF trae fecha de ayer | Se valida la vigencia | No se reintenta mindicador para la UF y se consulta findic directamente | `data/chain.test.ts` › "CA-03: UF no vigente en mindicador -> una sola llamada y findic solo con uf" |
+| CA-04 | Ambas fuentes fallan y existe caché | Termina el ciclo | El módulo queda `stale` y muestra "Actualizado el dd-mm-aaaa" | `data/chain.test.ts` › "CA-04: ambas fallan y hay caché -> stale con la lectura de caché"; `modules/indicator/IndicatorModule.test.tsx` › "stale: muestra "Actualizado el dd-mm-aaaa" y una clase distinta" |
+| CA-05 | Ambas fuentes fallan y no existe caché | Termina el ciclo | El módulo queda `empty` y no se dibuja: se oculta en la franja y la escena se salta si todos sus módulos están `empty` | `data/chain.test.ts` › "CA-05: ambas fallan y no hay caché -> empty"; `app/ProfileLayout.test.tsx` › "salta una escena con todos sus módulos empty" y "la franja muestra los cinco en minimal y oculta los empty" |
+| CA-06 | Es lunes y el último dólar disponible es del viernes | Se valida la vigencia | El dólar se considera vigente (3 días ≤ 4) | `data/freshness.test.ts` › "lunes con dólar del viernes: vigente (3 días)" |
+| CA-07 | Es 1 de octubre y la UTM disponible es de septiembre | Se valida la vigencia | La UTM se considera desactualizada | `data/freshness.test.ts` › "UTM de septiembre no es vigente el 1 de octubre" |
+| CA-08 | La fuente entrega `"fecha": "2026-10-02T03:00:00.000Z"` | Se normaliza la fecha | Se guarda `2026-10-02` (fecha en `America/Santiago`) | `lib/dates.test.ts` › "horario de verano (UTC-3): medianoche local"; `data/adapters/mindicador.test.ts` › "normaliza los cinco indicadores con fecha en America/Santiago" |
+| CA-09 | Una petición tarda más de 8 s | Se cumple el timeout | Se cancela y cuenta como intento fallido | `data/chain.test.ts` › "CA-09: una petición que nunca resuelve se aborta a los 8 s y cuenta como fallida" |
+| CA-10 | La aplicación está rotando | Una escena de indicadores cumple 15 s | Avanza a la siguiente escena reproducible | `app/ProfileLayout.test.tsx` › "recorre cobre, dólar y euro, video, UF y UTM, logos y vuelve al inicio" y "salta una escena con todos sus módulos empty" |
+| CA-11 | La escena de video está en pantalla | Termina el video | Avanza a la siguiente escena | `app/ProfileLayout.test.tsx` › "recorre cobre, dólar y euro, video, UF y UTM, logos y vuelve al inicio"; `modules/video/Video.test.tsx` › "llama a onComplete al terminar el video" |
+| CA-12 | El video no carga | Le toca su turno en la rotación | La escena se salta de inmediato | `app/ProfileLayout.test.tsx` › "si el video falla, la escena se salta de inmediato" |
+| CA-13 | Un ciclo de datos está en curso | La rotación sigue | La pantalla no se congela ni se vacía | `app/integration.test.tsx` › "CA-13: con un ciclo en curso la rotación sigue y la pantalla conserva sus datos" |
+| CA-14 | Hay serie reciente (30 días hábiles; 12 meses para la UTM) | Se dibuja el módulo | Se muestran el mini gráfico y la variación respecto del dato anterior | `modules/indicator/IndicatorModule.test.tsx` › "muestra etiqueta, valor, variación con su fecha, fecha, fuente y gráfico con ejes" y "rótulo del período mensual para la UTM" |
+| CA-15 | Un valor recibido no es un número finito | El adaptador procesa la respuesta | Ese indicador se omite en esa fuente y la cadena lo busca en la siguiente; los demás se procesan normalmente. En una serie de findic se descarta solo esa observación | `data/adapters/mindicador.test.ts` › "omite un indicador con valor no finito"; `data/adapters/findic.test.ts` › "descarta observaciones con valor no finito y mantiene el resto"; `data/chain.test.ts` › "respuesta parcial: el faltante va a findic sin reintentar mindicador" |
+| CA-16 | La fuente entrega una `fecha` que no es fecha válida | El adaptador procesa la respuesta | El indicador se omite y los demás se procesan normalmente | `data/adapters/mindicador.test.ts` › "omite un indicador con fecha inválida y procesa los demás"; `data/adapters/findic.test.ts` › "descarta observaciones con fecha inválida" |
 
 ### Estrategia de pruebas
 
